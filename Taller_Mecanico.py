@@ -35,7 +35,7 @@ def menu_principal(page: ft.Page):
     page.window.maximized=True
     page.title = "Administración de Taller Mecánico"
 
-    cliente_icono = ft.Image(src="C:/Users/nemer/OneDrive/Desktop/carpetas/trabajos/Tps progra/taller mecanico/iconos/iconos/usuario.png", width=28, height=28)
+    cliente_icono = ft.Image(src="/home/usuario/Desktop/FP/programacion/Flet/Taller-Mecanico/iconos/usuario.png", width=28, height=28)
     cliente_item = ft.Row(
         controls=[
             cliente_icono,
@@ -45,7 +45,7 @@ def menu_principal(page: ft.Page):
         spacing=8
     )
     
-    proveedor_icono = ft.Image(src="C:/Users/nemer/OneDrive/Desktop/carpetas/trabajos/Tps progra/taller mecanico/iconos/iconos/proveedor.png", width=28, height=28)
+    proveedor_icono = ft.Image(src="/home/usuario/Desktop/FP/programacion/Flet/Taller-Mecanico/iconos/proveedor.png", width=28, height=28)
     proveedor_item = ft.Row(
         controls=[
             proveedor_icono,
@@ -55,7 +55,7 @@ def menu_principal(page: ft.Page):
         spacing=8
     )
     
-    repuesto_icono = ft.Image(src="C:/Users/nemer/OneDrive/Desktop/carpetas/trabajos/Tps progra/taller mecanico/iconos/iconos/caja-de-cambios.png", width=28, height=28)  
+    repuesto_icono = ft.Image(src="/home/usuario/Desktop/FP/programacion/Flet/Taller-Mecanico/iconos/caja-de-cambios.png", width=28, height=28)  
     repuesto_item = ft.Row(
         controls=[
             repuesto_icono,
@@ -65,7 +65,7 @@ def menu_principal(page: ft.Page):
         spacing=8
     )
     
-    empleado_icono = ft.Image(src="C:/Users/nemer/OneDrive/Desktop/carpetas/trabajos/Tps progra/taller mecanico/iconos/iconos/empleado.png", width=28, height=28)  
+    empleado_icono = ft.Image(src="/home/usuario/Desktop/FP/programacion/Flet/Taller-Mecanico/iconos/empleado.png", width=28, height=28)  
     empleado_item = ft.Row(
         controls=[
             empleado_icono,
@@ -75,7 +75,7 @@ def menu_principal(page: ft.Page):
         spacing=8
     ) 
     
-    usuario_icono = ft.Image(src="C:/Users/nemer/OneDrive/Desktop/carpetas/trabajos/Tps progra/taller mecanico/iconos/iconos/usuarios.png", width=28, height=28)  
+    usuario_icono = ft.Image(src="/home/usuario/Desktop/FP/programacion/Flet/Taller-Mecanico/iconos/usuarios.png", width=28, height=28)  
     usuario_item = ft.Row(
         controls=[
             usuario_icono,
@@ -85,7 +85,7 @@ def menu_principal(page: ft.Page):
         spacing=8
     )
     
-    ficha_tecnica_icono=ft.Image(src="C:/Users/nemer/OneDrive/Desktop/carpetas/trabajos/Tps progra/taller mecanico/iconos/iconos/auto.png", width=28, height=28)
+    ficha_tecnica_icono=ft.Image(src="/home/usuario/Desktop/FP/programacion/Flet/Taller-Mecanico/iconos/auto.png", width=28, height=28)
     ficha_tecnica_item=ft.Row(
         controls=[
             ficha_tecnica_icono,
@@ -95,7 +95,7 @@ def menu_principal(page: ft.Page):
         spacing=8
     )
     
-    presupuesto_icono=ft.Image(src="C:/Users/nemer/OneDrive/Desktop/carpetas/trabajos/Tps progra/taller mecanico/iconos/iconos/presupuesto.png", width=28, height=28)
+    presupuesto_icono=ft.Image(src="/home/usuario/Desktop/FP/programacion/Flet/Taller-Mecanico/iconos/presupuesto.png", width=28, height=28)
     presupuesto_icono_item=ft.Row(
          controls=[
              presupuesto_icono,
@@ -131,7 +131,7 @@ def menu_principal(page: ft.Page):
         content=ft.Text("Administración"), tooltip="Administración de presupuesto y ficha técnica"
         
     )
-    
+
     boton_cliente_item=ft.Row(
         controls=[
             cliente_icono,
