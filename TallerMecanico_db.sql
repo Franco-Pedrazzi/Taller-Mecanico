@@ -89,9 +89,9 @@ CREATE TABLE `Repuesto_Reparacion` (
 );
 
 CREATE TABLE IF NOT EXISTS Usuarios (
-  id_usuario INT AUTO_INCREMENT PRIMARY KEY,
+  email VARCHAR(150) PRIMARY KEY,
   nombre VARCHAR(100) NOT NULL,
-  email VARCHAR(150) NOT NULL
+  contraseña  VARCHAR(150) NOT NULL
 );
 
 CREATE TABLE `Ficha_Tecnica` (
@@ -104,3 +104,4 @@ CREATE TABLE `Ficha_Tecnica` (
   FOREIGN KEY (`Vehiculo_Matricula`) REFERENCES `Vehiculo` (`matricula`)
 );
 
+insert into Usuarios values ("Robert@gmail.com","Roberto","1234"), ("Fran@gmail.com","Franchesco","1234"), ("Jos@gmail.com","Josue","1234"),("1","prueba","1");

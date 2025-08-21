@@ -8,6 +8,10 @@ from Empleado import Herramienta_empleado
 from Provedor import Herramienta_Provedor
 from Repuesto import Herramienta_Repuesto
 from usuario import Herramienta_Usuario
+
+
+nombre=""
+
 def connect_to_db():
     try:
         connection = mysql.connector.connect(
@@ -19,10 +23,10 @@ def connect_to_db():
             ssl_disabled=True
         )
         if connection.is_connected():
-            print('Conexión exitosa')
+            print('Conexion exitosa')
             return connection
     except Exception as ex:
-        print('Conexión errónea')
+        print('Conexion erronea')
         print(ex)
         return None
 
@@ -31,11 +35,12 @@ connection = connect_to_db()
 
 
 
-def menu_principal(page: ft.Page):
+def menu_principal(page: ft.Page,name):
+    nombre=name
     page.window.maximized=True
-    page.title = "Administración de Taller Mecánico"
+    page.title = "Administracion de Taller Mecanico"
 
-    cliente_icono = ft.Image(src="/home/usuario/Desktop/FP/programacion/Flet/Taller-Mecanico/iconos/usuario.png", width=28, height=28)
+    cliente_icono = ft.Image(src="C:/Users/nemer/OneDrive/Desktop/carpetas/trabajos/Tps progra/Flet/Taller-Mecanico/iconos//usuario.png", width=28, height=28)
     cliente_item = ft.Row(
         controls=[
             cliente_icono,
@@ -45,7 +50,7 @@ def menu_principal(page: ft.Page):
         spacing=8
     )
     
-    proveedor_icono = ft.Image(src="/home/usuario/Desktop/FP/programacion/Flet/Taller-Mecanico/iconos/proveedor.png", width=28, height=28)
+    proveedor_icono = ft.Image(src="C:/Users/nemer/OneDrive/Desktop/carpetas/trabajos/Tps progra/Flet/Taller-Mecanico/iconos//proveedor.png", width=28, height=28)
     proveedor_item = ft.Row(
         controls=[
             proveedor_icono,
@@ -55,7 +60,7 @@ def menu_principal(page: ft.Page):
         spacing=8
     )
     
-    repuesto_icono = ft.Image(src="/home/usuario/Desktop/FP/programacion/Flet/Taller-Mecanico/iconos/caja-de-cambios.png", width=28, height=28)  
+    repuesto_icono = ft.Image(src="C:/Users/nemer/OneDrive/Desktop/carpetas/trabajos/Tps progra/Flet/Taller-Mecanico/iconos//caja-de-cambios.png", width=28, height=28)  
     repuesto_item = ft.Row(
         controls=[
             repuesto_icono,
@@ -65,7 +70,7 @@ def menu_principal(page: ft.Page):
         spacing=8
     )
     
-    empleado_icono = ft.Image(src="/home/usuario/Desktop/FP/programacion/Flet/Taller-Mecanico/iconos/empleado.png", width=28, height=28)  
+    empleado_icono = ft.Image(src="C:/Users/nemer/OneDrive/Desktop/carpetas/trabajos/Tps progra/Flet/Taller-Mecanico/iconos//empleado.png", width=28, height=28)  
     empleado_item = ft.Row(
         controls=[
             empleado_icono,
@@ -75,7 +80,7 @@ def menu_principal(page: ft.Page):
         spacing=8
     ) 
     
-    usuario_icono = ft.Image(src="/home/usuario/Desktop/FP/programacion/Flet/Taller-Mecanico/iconos/usuarios.png", width=28, height=28)  
+    usuario_icono = ft.Image(src="C:/Users/nemer/OneDrive/Desktop/carpetas/trabajos/Tps progra/Flet/Taller-Mecanico/iconos//usuarios.png", width=28, height=28)  
     usuario_item = ft.Row(
         controls=[
             usuario_icono,
@@ -85,17 +90,17 @@ def menu_principal(page: ft.Page):
         spacing=8
     )
     
-    ficha_tecnica_icono=ft.Image(src="/home/usuario/Desktop/FP/programacion/Flet/Taller-Mecanico/iconos/auto.png", width=28, height=28)
+    ficha_tecnica_icono=ft.Image(src="C:/Users/nemer/OneDrive/Desktop/carpetas/trabajos/Tps progra/Flet/Taller-Mecanico/iconos//auto.png", width=28, height=28)
     ficha_tecnica_item=ft.Row(
         controls=[
             ficha_tecnica_icono,
-            ft.Text("Ficha Técnica")
+            ft.Text("Ficha Tecnica")
         ],
         alignment=ft.MainAxisAlignment.START,
         spacing=8
     )
     
-    presupuesto_icono=ft.Image(src="/home/usuario/Desktop/FP/programacion/Flet/Taller-Mecanico/iconos/presupuesto.png", width=28, height=28)
+    presupuesto_icono=ft.Image(src="C:/Users/nemer/OneDrive/Desktop/carpetas/trabajos/Tps progra/Flet/Taller-Mecanico/iconos//presupuesto.png", width=28, height=28)
     presupuesto_icono_item=ft.Row(
          controls=[
              presupuesto_icono,
@@ -128,7 +133,7 @@ def menu_principal(page: ft.Page):
             ft.PopupMenuItem(content=ficha_tecnica_item),#, on_click=lambda e: cliente(e, page)),
             ft.PopupMenuItem(content=presupuesto_icono_item),#, on_click=lambda e:proveedor(e, page)),
         ],
-        content=ft.Text("Administración"), tooltip="Administración de presupuesto y ficha técnica"
+        content=ft.Text("Administracion"), tooltip="Administracion de presupuesto y ficha tecnica"
         
     )
 
@@ -152,7 +157,7 @@ def menu_principal(page: ft.Page):
                  ficha_tecnica_icono,
         ]
     )
-    boton_ficha_tecnica = ft.IconButton(content=boton_ficha_tecnica_item,tooltip="Ficha Técnica")
+    boton_ficha_tecnica = ft.IconButton(content=boton_ficha_tecnica_item,tooltip="Ficha Tecnica")
 
     boton_presupuesto_item=ft.Row(
         controls=[
@@ -167,6 +172,7 @@ def menu_principal(page: ft.Page):
     page.add(
         ft.Row(
             controls=[
+                ft.Text(f"hola {name}     ",size=24, weight="bold"),
                 archivo_menu,
                 administracion,
                 herramientas_menu
@@ -188,37 +194,73 @@ def menu_principal(page: ft.Page):
 
 def cliente(e, page: ft.Page):
     page.controls.clear()
-    menu_principal(page)
+    menu_principal(page,nombre)
     Herramienta_Cliente(page)
     page.update()
     
 def proveedor(e, page: ft.Page):
     page.controls.clear()
-    menu_principal(page)
+    menu_principal(page,nombre)
     Herramienta_Provedor(page)
     page.update()
 
 def empleado(e, page: ft.Page):
     page.controls.clear()
-    menu_principal(page)
+    menu_principal(page,nombre)
     Herramienta_empleado(page)
     page.update()
 
 def usuario(e, page: ft.Page):
     page.controls.clear()
-    menu_principal(page)
+    menu_principal(page,nombre)
     Herramienta_Usuario(page)
     page.update()
 
 def Repuesto(e, page: ft.Page):
     page.controls.clear()
-    menu_principal(page)
+    menu_principal(page,nombre)
     Herramienta_Repuesto(page)
     page.update()
 
-def main(page: ft.Page):
-    page.window.maximized = True
-    menu_principal(page)
+def log(page: ft.Page):
+    page.title = "Login"
 
-ft.app(target=main)
+    Email = ft.TextField(label="Email")
+    Password = ft.TextField(label="Contraseña", password=True, can_reveal_password=True)
+
+    def login(e):
+        conn = connect_to_db()
+        cursor = conn.cursor()
+        try:
+            cursor.execute("""
+                SELECT nombre
+                FROM Usuarios
+                WHERE email=%s AND contraseña=%s
+            """, (Email.value, Password.value))
+            resultado = cursor.fetchone()
+        except Exception as ex:
+            print("Error: ", ex)
+            resultado = None
+        finally:
+            cursor.close()
+            conn.close()
+
+        if resultado:
+            page.session.set("usuario", resultado[0])
+            page.controls.clear()
+            menu_principal(page,resultado[0])
+            
+        else:
+            print("Email o contraseña incorrectos")
+        page.update()
+
+    page.add(
+        ft.Text("Login", size=24, weight="bold"),
+        Email,
+        Password,
+        ft.ElevatedButton("Aceptar", on_click=login)
+    )
+
+
+ft.app(target=log)
 #ft.app(main, view=ft.AppView.WEB_BROWSER)

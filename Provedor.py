@@ -9,6 +9,25 @@ def conectar_bd():
         database="TallerMecanico"
     )
 
+
+def get_options():
+    with conectar_bd() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT cod_Provedor FROM Provedor ORDER BY cod_Provedor")
+            resultados = cursor.fetchall()
+            return [ft.dropdown.Option(nombre[0]) for nombre in resultados]
+
+def obtener_Provedor_filtrada(nombre):
+    with conectar_bd() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                SELECT c.cod_Provedor, p.dni, p.nombre, p.apellido, p.tel, p.dir
+                FROM Provedor c
+                JOIN Persona p ON c.dni_Provedor = p.dni
+                WHERE c.cod_Provedor LIKE %s
+            """, (nombre,))
+            return cursor.fetchall()
+
 def obtener_Provedor():
     conn = conectar_bd()
     cursor = conn.cursor()
@@ -68,15 +87,15 @@ def actualizar_Provedor(cod_Provedor, dni, nombre, apellido, tel, dir_):
         conn.close()
 
 def Herramienta_Provedor(page: ft.Page):
-    page.title = "Gestión de Provedor"
+    page.title = "Gestion de Provedor"
     page.scroll = ft.ScrollMode.AUTO
 
     nombre = ft.TextField(label="Nombre")
     apellido = ft.TextField(label="Apellido")
     dni = ft.TextField(label="DNI")
-    telefono = ft.TextField(label="Teléfono")
-    direccion = ft.TextField(label="Dirección")
-    codigo = ft.TextField(label="Código Provedor")
+    telefono = ft.TextField(label="Telefono")
+    direccion = ft.TextField(label="Direccion")
+    codigo = ft.TextField(label="Codigo Provedor")
     modo_edicion = ft.Text() 
 
     btn_guardar = ft.ElevatedButton("Guardar")
@@ -88,23 +107,45 @@ def Herramienta_Provedor(page: ft.Page):
     )
     tabla = ft.Column()
 
-    def cargar_tabla():
+    filtro = ft.Dropdown(
+        border=ft.InputBorder.UNDERLINE,
+        editable=True,
+        label="Filtro",
+        options=get_options(),
+    )
+
+
+    def cargar_tabla(Provedor=None):
+        datos = Provedor
+        if Provedor is None:
+            datos= obtener_Provedor()
         tabla.controls.clear()
-        Provedor = obtener_Provedor()
-        for c in Provedor:
-            fila = ft.Row([
-                ft.Text(c[0]),  
-                ft.Text(c[1]),  
-                ft.Text(c[2]),  
-                ft.Text(c[3]),  
-                ft.Text(c[4]),  
-                ft.Text(c[5]),  
-                ft.IconButton(ft.Icons.EDIT, on_click=lambda e, c=c: mostrar_formulario(e, c)),
-                ft.IconButton(ft.Icons.DELETE, on_click=lambda e, dni=c[1]: eliminar_ui(e, dni)),
-            ])
-            tabla.controls.append(fila)
+        for c in datos:
+                tabla.controls.append(ft.Row([
+                        ft.Text(str(c[0])),
+                        ft.Text(str(c[1])),
+                        ft.Text(str(c[2])),
+                        ft.Text(str(c[3])),
+                        ft.Text(str(c[4])),
+                        ft.Text(str(c[5])),
+                        
+                        ft.Row([
+                                ft.IconButton(ft.Icons.EDIT, on_click=lambda e, c=c: mostrar_formulario(c)),
+                                ft.IconButton(ft.Icons.DELETE, on_click=lambda e, nombre=c[0]: eliminar_ui(nombre)),
+                            ]),
+                    
+                ])
+            )
         page.update()
 
+    def filtrar_tabla(e):
+        if filtro.value:
+            datos = obtener_Provedor_filtrada(filtro.value)
+            filtro.value = ""
+            cargar_tabla(datos)
+        else:
+            cargar_tabla()
+            
     def mostrar_formulario(e=None, Provedor=None):
         form.visible = True
         if Provedor:
@@ -130,6 +171,7 @@ def Herramienta_Provedor(page: ft.Page):
         else:
             insertar_Provedor(codigo.value, dni.value, nombre.value, apellido.value, telefono.value, direccion.value)
         form.visible = False
+        filtro.options = get_options()
         cargar_tabla()
         page.update()
 
@@ -144,11 +186,14 @@ def Herramienta_Provedor(page: ft.Page):
     btn_guardar.on_click = enviar_datos
     btn_cancelar.on_click = cancelar
 
+    lupa = ft.IconButton(tooltip="Filtrar", icon=ft.Icons.SEARCH, on_click=filtrar_tabla)
+
     page.add(
         ft.Text("Provedor", size=24, weight="bold"),
         ft.ElevatedButton("Agregar Provedor", on_click=mostrar_formulario),
         form,
         ft.Divider(),
+        ft.Row([filtro, lupa]),
         tabla
     )
 

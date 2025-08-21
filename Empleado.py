@@ -9,6 +9,24 @@ def conectar_bd():
         database="TallerMecanico"
     )
 
+def get_options():
+    with conectar_bd() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT legajo FROM empleado ORDER BY legajo")
+            resultados = cursor.fetchall()
+            return [ft.dropdown.Option(nombre[0]) for nombre in resultados]
+
+def obtener_empleado_filtrada(nombre):
+    with conectar_bd() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute("""
+        SELECT c.legajo, p.dni, p.nombre, p.apellido, p.tel, p.dir
+        FROM Empleado c
+        JOIN Persona p ON c.dni_empleado = p.dni
+                WHERE c.legajo LIKE %s
+            """, (nombre,))
+            return cursor.fetchall()
+
 def obtener_empleado():
     conn = conectar_bd()
     cursor = conn.cursor()
@@ -68,14 +86,14 @@ def actualizar_empleado(legajo, dni, nombre, apellido, tel, dir_):
         conn.close()
 
 def Herramienta_empleado(page: ft.Page):
-    page.title = "Gestión de empleado"
+    page.title = "Gestion de empleado"
     page.scroll = ft.ScrollMode.AUTO
 
     nombre = ft.TextField(label="Nombre")
     apellido = ft.TextField(label="Apellido")
     dni = ft.TextField(label="DNI")
-    telefono = ft.TextField(label="Teléfono")
-    direccion = ft.TextField(label="Dirección")
+    telefono = ft.TextField(label="Telefono")
+    direccion = ft.TextField(label="Direccoon")
     legajo = ft.TextField(label="legajo empleado")
     modo_edicion = ft.Text()  
 
@@ -88,23 +106,45 @@ def Herramienta_empleado(page: ft.Page):
     )
     tabla = ft.Column()
 
-    def cargar_tabla():
+    filtro = ft.Dropdown(
+        border=ft.InputBorder.UNDERLINE,
+        editable=True,
+        label="Filtro",
+        options=get_options(),
+    )
+
+
+    def cargar_tabla(empleado=None):
+        datos = empleado
+        if empleado is None:
+            datos= obtener_empleado()
         tabla.controls.clear()
-        empleado = obtener_empleado()
-        for c in empleado:
-            fila = ft.Row([
-                ft.Text(c[0]),  
-                ft.Text(c[1]),  
-                ft.Text(c[2]),  
-                ft.Text(c[3]),  
-                ft.Text(c[4]),  
-                ft.Text(c[5]),  
-                ft.IconButton(ft.Icons.EDIT, on_click=lambda e, c=c: mostrar_formulario(e, c)),
-                ft.IconButton(ft.Icons.DELETE, on_click=lambda e, dni=c[1]: eliminar_ui(e, dni)),
-            ])
-            tabla.controls.append(fila)
+        for c in datos:
+                tabla.controls.append(ft.Row([
+                        ft.Text(str(c[0])),
+                        ft.Text(str(c[1])),
+                        ft.Text(str(c[2])),
+                        ft.Text(str(c[3])),
+                        ft.Text(str(c[4])),
+                        ft.Text(str(c[5])),
+                        
+                        ft.Row([
+                                ft.IconButton(ft.Icons.EDIT, on_click=lambda e, c=c: mostrar_formulario(c)),
+                                ft.IconButton(ft.Icons.DELETE, on_click=lambda e, nombre=c[0]: eliminar_ui(nombre)),
+                            ]),
+                    
+                ])
+            )
         page.update()
 
+    def filtrar_tabla(e):
+        if filtro.value:
+            datos = obtener_empleado_filtrada(filtro.value)
+            filtro.value = ""
+            cargar_tabla(datos)
+        else:
+            cargar_tabla()
+            
     def mostrar_formulario(e=None, empleado=None):
         form.visible = True
         if empleado:
@@ -131,6 +171,7 @@ def Herramienta_empleado(page: ft.Page):
             insertar_empleado(legajo.value, dni.value, nombre.value, apellido.value, telefono.value, direccion.value)
         form.visible = False
         cargar_tabla()
+        filtro.options = get_options()
         page.update()
 
     def eliminar_ui(e, dni_empleado):
@@ -143,12 +184,15 @@ def Herramienta_empleado(page: ft.Page):
 
     btn_guardar.on_click = enviar_datos
     btn_cancelar.on_click = cancelar
+    
+    lupa = ft.IconButton(tooltip="Filtrar", icon=ft.Icons.SEARCH, on_click=filtrar_tabla)
 
     page.add(
-        ft.Text("empleado", size=24, weight="bold"),
-        ft.ElevatedButton("Agregar empleado", on_click=mostrar_formulario),
+        ft.Text("Repuestos", size=24, weight="bold"),
+        ft.ElevatedButton("Agregar repuesto", on_click=lambda e: mostrar_formulario()),
         form,
         ft.Divider(),
+        ft.Row([filtro, lupa]),
         tabla
     )
 

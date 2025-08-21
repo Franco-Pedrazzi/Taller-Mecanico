@@ -10,91 +10,55 @@ def conectar_bd():
     )
 
 def get_options():
-    options = []
-    conn = conectar_bd()
-    cursor = conn.cursor()
-    cursor.execute("""
-        SELECT nombre
-        FROM Repuesto
-        ORDER BY nombre
-    """)
-    resultados = cursor.fetchall()
-    cursor.close()
-    conn.close()
-    for nombre in resultados:
-        options.append(ft.dropdown.Option(nombre[0]))
-    return options
+    with conectar_bd() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT nombre FROM Repuesto ORDER BY nombre")
+            resultados = cursor.fetchall()
+            return [ft.dropdown.Option(nombre[0]) for nombre in resultados]
 
 def obtener_Repuesto_filtrada(nombre):
-    conn = conectar_bd()
-    cursor = conn.cursor()
-    cursor.execute("""
-        SELECT nombre, precio_x_unidad, cantidad
-        FROM Repuesto
-        WHERE nombre LIKE %s
-    """, (f"%{nombre}%",))
-    resultados = cursor.fetchall()
-    cursor.close()
-    conn.close()
-    return resultados
+    with conectar_bd() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                SELECT nombre, precio_x_unidad, cantidad
+                FROM Repuesto
+                WHERE nombre LIKE %s
+            """, (f"%{nombre}%",))
+            return cursor.fetchall()
 
 def obtener_Repuesto():
-    conn = conectar_bd()
-    cursor = conn.cursor()
-    cursor.execute("""
-        SELECT nombre, precio_x_unidad, cantidad
-        FROM Repuesto
-    """)
-    resultados = cursor.fetchall()
-    cursor.close()
-    conn.close()
-    return resultados
+    with conectar_bd() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT nombre, precio_x_unidad, cantidad FROM Repuesto")
+            return cursor.fetchall()
 
 def insertar_repuesto(nombre, precio_x_unidad, cantidad):
-    conn = conectar_bd()
-    cursor = conn.cursor()
-    try:
-        cursor.execute("""
-            INSERT INTO Repuesto (nombre, precio_x_unidad, cantidad)
-            VALUES (%s, %s, %s)
-        """, (nombre, precio_x_unidad, cantidad))
-        conn.commit()
-    except Exception as e:
-        print("Error al insertar repuesto:", e)
-    finally:
-        cursor.close()
-        conn.close()
+    with conectar_bd() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                INSERT INTO Repuesto (nombre, precio_x_unidad, cantidad)
+                VALUES (%s, %s, %s)
+            """, (nombre, precio_x_unidad, cantidad))
+            conn.commit()
 
 def eliminar_repuesto(nombre):
-    conn = conectar_bd()
-    cursor = conn.cursor()
-    try:
-        cursor.execute("DELETE FROM Repuesto WHERE nombre = %s", (nombre,))
-        conn.commit()
-    except Exception as e:
-        print("Error al eliminar repuesto:", e)
-    finally:
-        cursor.close()
-        conn.close()
+    with conectar_bd() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute("DELETE FROM Repuesto WHERE nombre = %s", (nombre,))
+            conn.commit()
 
 def actualizar_repuesto(nombre, precio_x_unidad, cantidad):
-    conn = conectar_bd()
-    cursor = conn.cursor()
-    try:
-        cursor.execute("""
-            UPDATE Repuesto
-            SET precio_x_unidad=%s, cantidad=%s
-            WHERE nombre=%s
-        """, (precio_x_unidad, cantidad, nombre))
-        conn.commit()
-    except Exception as e:
-        print("Error al actualizar repuesto:", e)
-    finally:
-        cursor.close()
-        conn.close()
+    with conectar_bd() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                UPDATE Repuesto
+                SET precio_x_unidad=%s, cantidad=%s
+                WHERE nombre=%s
+            """, (precio_x_unidad, cantidad, nombre))
+            conn.commit()
 
 def Herramienta_Repuesto(page: ft.Page):
-    page.title = "Gestión de Repuesto"
+    page.title = "Gestion de Repuestos"
     page.scroll = ft.ScrollMode.AUTO
 
     nombre = ft.TextField(label="Nombre")
@@ -109,6 +73,7 @@ def Herramienta_Repuesto(page: ft.Page):
         controls=[nombre, precio_x_unidad, cantidad, ft.Row([btn_guardar, btn_cancelar])],
         visible=False
     )
+
     tabla = ft.Column()
 
     filtro = ft.Dropdown(
@@ -118,24 +83,34 @@ def Herramienta_Repuesto(page: ft.Page):
         options=get_options(),
     )
 
-    def cargar_tabla(repuestos=None):
+    def actualizar_opciones():
+        filtro.options = get_options()
+        page.update()
+
+    def cargar_tabla(Repuesto=None):
+        datos = Repuesto
+        if Repuesto is None:
+            datos= obtener_Repuesto()
         tabla.controls.clear()
-        datos = repuestos if repuestos is not None else obtener_Repuesto()
         for c in datos:
-            fila = ft.Row([
-                ft.Text(str(c[0])),
-                ft.Text(str(c[1])),
-                ft.Text(str(c[2])),
-                ft.IconButton(ft.Icons.EDIT, on_click=lambda e, c=c: mostrar_formulario(c)),
-                ft.IconButton(ft.Icons.DELETE, on_click=lambda e, nombre=c[0]: eliminar_ui(nombre)),
-            ])
-            tabla.controls.append(fila)
+                tabla.controls.append(ft.Row([
+                        ft.Text(str(c[0])),
+                        ft.Text(str(c[1])),
+                        ft.Text(str(c[2])),
+                        
+                        ft.Row([
+                                ft.IconButton(ft.Icons.EDIT, on_click=lambda e, c=c: mostrar_formulario(c)),
+                                ft.IconButton(ft.Icons.DELETE, on_click=lambda e, nombre=c[0]: eliminar_ui(nombre)),
+                            ]),
+                    
+                ])
+            )
         page.update()
 
     def filtrar_tabla(e):
-        print(filtro.value)
         if filtro.value:
             datos = obtener_Repuesto_filtrada(filtro.value)
+            filtro.value = ""
             cargar_tabla(datos)
         else:
             cargar_tabla()
@@ -155,15 +130,30 @@ def Herramienta_Repuesto(page: ft.Page):
         page.update()
 
     def enviar_datos(e):
+        if not nombre.value.strip():
+            page.update()
+            return
+
+        try:
+            precio = float(precio_x_unidad.value)
+            cantidad_int = int(cantidad.value)
+
+        except ValueError:
+            page.update()
+            return
+
         if modo_edicion.value == "editar":
-            actualizar_repuesto(nombre.value, precio_x_unidad.value, cantidad.value)
+            actualizar_repuesto(nombre.value, precio, cantidad_int)
         else:
-            insertar_repuesto(nombre.value, precio_x_unidad.value, cantidad.value)
+            insertar_repuesto(nombre.value, precio, cantidad_int)
+        filtro.options=get_options()
+         
         form.visible = False
         cargar_tabla()
 
     def eliminar_ui(nombre_repuesto):
         eliminar_repuesto(nombre_repuesto)
+        actualizar_opciones()
         cargar_tabla()
 
     def cancelar(e):

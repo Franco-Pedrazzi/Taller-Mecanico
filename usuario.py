@@ -3,151 +3,156 @@ import mysql.connector
 
 def conectar_bd():
     return mysql.connector.connect(
-        host='localhost',
-        port='3306',
-        user='root',
-        password='123456',
-        database='TallerMecanico',
-        ssl_disabled=True
+        host="localhost",
+        user="root",
+        password="123456",
+        database="TallerMecanico"
     )
 
-def obtener_usuarios():
-    conn = conectar_bd()
-    cursor = conn.cursor()
-    cursor.execute("SELECT id_usuario, nombre, email FROM Usuarios")
-    resultados = cursor.fetchall()
-    cursor.close()
-    conn.close()
-    return resultados
+def get_options():
+    with conectar_bd() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT email FROM Usuarios ORDER BY email")
+            resultados = cursor.fetchall()
+            return [ft.dropdown.Option(email[0]) for email in resultados]
 
-def insertar_usuario(nombre, email):
-    conn = conectar_bd()
-    cursor = conn.cursor()
-    try:
-        cursor.execute("INSERT INTO Usuarios (nombre, email) VALUES (%s, %s)", (nombre, email))
-        conn.commit()
-    except mysql.connector.Error as e:
-        print("Error al insertar usuario:", e)
-        raise
-    finally:
-        cursor.close()
-        conn.close()
+def obtener_Usuario_filtrada(email):
+    with conectar_bd() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                SELECT email, nombre, contraseña
+                FROM Usuarios
+                WHERE email LIKE %s
+            """, (f"%{email}%",))
+            return cursor.fetchall()
 
-def actualizar_usuario(id_usuario, nombre, email):
-    conn = conectar_bd()
-    cursor = conn.cursor()
-    try:
-        cursor.execute("UPDATE Usuarios SET nombre=%s, email=%s WHERE id_usuario=%s",
-                       (nombre, email, id_usuario))
-        conn.commit()
-    except mysql.connector.Error as e:
-        print("Error al actualizar usuario:", e)
-        raise
-    finally:
-        cursor.close()
-        conn.close()
+def obtener_Usuario():
+    with conectar_bd() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT email, nombre, contraseña FROM Usuarios")
+            return cursor.fetchall()
 
-def eliminar_usuario(id_usuario):
-    conn = conectar_bd()
-    cursor = conn.cursor()
-    try:
-        cursor.execute("DELETE FROM Usuarios WHERE id_usuario=%s", (id_usuario,))
-        conn.commit()
-    except mysql.connector.Error as e:
-        print("Error al eliminar usuario:", e)
-        raise
-    finally:
-        cursor.close()
-        conn.close()
+def insertar_Usuario(email, nombre, contraseña):
+    with conectar_bd() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                INSERT INTO Usuarios (email, nombre, contraseña)
+                VALUES (%s, %s, %s)
+            """, (email, nombre, contraseña))
+            conn.commit()
 
-def Herramienta_Usuario(page: ft.Page, main_menu=None):
-    page.title = "Gestión de Usuarios"
+def eliminar_Usuario(email):
+    with conectar_bd() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute("DELETE FROM Usuarios WHERE email = %s", (email,))
+            conn.commit()
+
+def actualizar_Usuario(email, nombre, contraseña):
+    with conectar_bd() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                UPDATE Usuarios
+                SET nombre=%s, contraseña=%s
+                WHERE email=%s
+            """, (nombre, contraseña, email))
+            conn.commit()
+
+def Herramienta_Usuario(page: ft.Page):
+    page.title = "Gestion de Usuarios"
     page.scroll = ft.ScrollMode.AUTO
 
-    id_field = ft.TextField(label="ID", disabled=True)
-    nombre = ft.TextField(label="Nombre")
-    email = ft.TextField(label="Email")
-    modo_edicion = ft.Text()  
+    email = ft.TextField(label="email")
+    nombre = ft.TextField(label="nombre")
+    contraseña = ft.TextField(label="contraseña")
+    modo_edicion = ft.Text()
 
     btn_guardar = ft.ElevatedButton("Guardar")
     btn_cancelar = ft.TextButton("Cancelar")
 
     form = ft.Column(
-        controls=[id_field, nombre, email, ft.Row([btn_guardar, btn_cancelar])],
+        controls=[email, nombre, contraseña, ft.Row([btn_guardar, btn_cancelar])],
         visible=False
     )
+
     tabla = ft.Column()
 
-    def show_message(msg):
-        page.snack_bar = ft.SnackBar(ft.Text(msg))
-        page.snack_bar.open = True
+    filtro = ft.Dropdown(
+        border=ft.InputBorder.UNDERLINE,
+        editable=True,
+        label="Filtro",
+        options=get_options(),
+    )
+
+    def actualizar_opciones():
+        filtro.options = get_options()
         page.update()
 
-    def cargar_tabla():
+    def cargar_tabla(Usuario=None):
+        datos = Usuario
+        if Usuario is None:
+            datos= obtener_Usuario()
         tabla.controls.clear()
-        try:
-            usuarios = obtener_usuarios()
-            for u in usuarios:
-                fila = ft.Row([
-                    ft.Text(str(u[0])),
-                    ft.Text(u[1]),
-                    ft.Text(u[2]),
-                    ft.IconButton(ft.Icons.EDIT, on_click=lambda e, u=u: mostrar_formulario(e, u)),
-                    ft.IconButton(ft.Icons.DELETE, on_click=lambda e, idu=u[0]: eliminar_ui(e, idu)),
+        for c in datos:
+                tabla.controls.append(ft.Row([
+                        ft.Text(str(c[0])),
+                        ft.Text(str(c[1])),
+                        
+                        ft.Row([
+                                ft.IconButton(ft.Icons.EDIT, on_click=lambda e, c=c: mostrar_formulario(c)),
+                                ft.IconButton(ft.Icons.DELETE, on_click=lambda e, email=c[0]: eliminar_ui(email)),
+                            ]),
+                    
                 ])
-                tabla.controls.append(fila)
-        except Exception as e:
-            print("Error cargando usuarios:", e)
-            show_message("Error al cargar usuarios. Ver consola.")
+            )
         page.update()
 
-    def mostrar_formulario(e=None, usuario=None):
+    def filtrar_tabla(e):
+        if filtro.value:
+            datos = obtener_Usuario_filtrada(filtro.value)
+            filtro.value = ""
+            cargar_tabla(datos)
+        else:
+            cargar_tabla()
+
+    def mostrar_formulario(Usuario=None):
         form.visible = True
-        if usuario:
-            id_field.value = str(usuario[0])
-            nombre.value = usuario[1]
-            email.value = usuario[2]
-            id_field.disabled = True
+        if Usuario:
+            email.value = Usuario[0]
+            nombre.value = str(Usuario[1])
+            contraseña.value = str(Usuario[2])
+            email.disabled = True
             modo_edicion.value = "editar"
         else:
-            id_field.value = ""
-            nombre.value = ""
-            email.value = ""
-            id_field.disabled = True
+            email.value = nombre.value = contraseña.value = ""
             modo_edicion.value = ""
+            email.disabled = False
         page.update()
 
     def enviar_datos(e):
-        if not nombre.value or not email.value:
-            show_message("Completá todos los campos.")
+        if not email.value.strip():
+            page.update()
+            return
+
+        try:
+            nombre_val = str(nombre.value)
+            contraseña_val = int(contraseña.value)
+
+        except ValueError:
+            page.update()
             return
 
         if modo_edicion.value == "editar":
-            try:
-                actualizar_usuario(int(id_field.value), nombre.value, email.value)
-                show_message("Usuario actualizado.")
-            except Exception as ex:
-                print("Error al actualizar:", ex)
-                show_message("Error al actualizar. Ver consola.")
+            actualizar_Usuario(email.value, nombre_val, contraseña_val)
         else:
-            try:
-                insertar_usuario(nombre.value, email.value)
-                show_message("Usuario insertado.")
-            except Exception as ex:
-                print("Error al insertar:", ex)
-                show_message("Error al insertar. Ver consola.")
-
+            insertar_Usuario(email.value, nombre_val, contraseña_val)
+        filtro.options=get_options()
+         
         form.visible = False
         cargar_tabla()
-        page.update()
 
-    def eliminar_ui(e, id_usuario):
-        try:
-            eliminar_usuario(id_usuario)
-            show_message("Usuario eliminado.")
-        except Exception as ex:
-            print("Error al eliminar:", ex)
-            show_message("No se pudo eliminar el usuario. Ver consola.")
+    def eliminar_ui(email):
+        eliminar_Usuario(email)
+        actualizar_opciones()
         cargar_tabla()
 
     def cancelar(e):
@@ -157,15 +162,19 @@ def Herramienta_Usuario(page: ft.Page, main_menu=None):
     btn_guardar.on_click = enviar_datos
     btn_cancelar.on_click = cancelar
 
+    lupa = ft.IconButton(tooltip="Filtrar", icon=ft.Icons.SEARCH, on_click=filtrar_tabla)
+
     page.add(
         ft.Text("Usuarios", size=24, weight="bold"),
-        ft.ElevatedButton("Agregar Usuario", on_click=lambda e: mostrar_formulario(e, None)),
+        ft.ElevatedButton("Agregar Usuario", on_click=lambda e: mostrar_formulario()),
         form,
         ft.Divider(),
+        ft.Row([filtro, lupa]),
         tabla
     )
 
     cargar_tabla()
+
 
 if __name__ == "__main__":
     ft.app(target=Herramienta_Usuario)

@@ -20,7 +20,7 @@ def conectar_bd():
             ssl_disabled=True
         )
         if connection.is_connected():
-            print("Conexión exitosa")
+            print("Conexion exitosa")
             return connection
     except Exception as e:
         print("Error al conectar a la base de datos:", e)
@@ -32,8 +32,8 @@ def Herramienta_persona(page: ft.Page, main_menu):
     dni = ft.TextField(label="DNI")
     nombre = ft.TextField(label="Nombre")
     apellido = ft.TextField(label="Apellido")
-    dir = ft.TextField(label="Dirección")
-    tel = ft.TextField(label="Teléfono")
+    dir = ft.TextField(label="Direccion")
+    tel = ft.TextField(label="Telefono")
 
     def enviar(e):
         persona = Persona(
@@ -46,7 +46,7 @@ def Herramienta_persona(page: ft.Page, main_menu):
 
         conexion = conectar_bd()
         if not conexion:
-            page.add(ft.Text("Error de conexión a la base de datos"))
+            page.add(ft.Text("Error de conexion a la base de datos"))
             page.update()
             return
 
