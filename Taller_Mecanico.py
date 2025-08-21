@@ -1,7 +1,6 @@
 import flet as ft
 import mysql.connector
 
-#--Importar los archivos correspondiente al sistema con las clases
 
 from cliente import Herramienta_Cliente
 from Empleado import Herramienta_empleado
@@ -10,7 +9,6 @@ from Repuesto import Herramienta_Repuesto
 from usuario import Herramienta_Usuario
 
 
-nombre=""
 
 def connect_to_db():
     try:
@@ -36,7 +34,6 @@ connection = connect_to_db()
 
 
 def menu_principal(page: ft.Page,name):
-    nombre=name
     page.window.maximized=True
     page.title = "Administracion de Taller Mecanico"
 
@@ -118,11 +115,11 @@ def menu_principal(page: ft.Page,name):
 
     herramientas_menu = ft.PopupMenuButton(
         items=[
-            ft.PopupMenuItem(content=cliente_item, on_click=lambda e: cliente(e, page)),
-            ft.PopupMenuItem(content=proveedor_item, on_click=lambda e:proveedor(e, page)),
-            ft.PopupMenuItem(content=repuesto_item, on_click=lambda e: Repuesto(e, page)),
-            ft.PopupMenuItem(content=empleado_item, on_click=lambda e: empleado(e, page)),
-            ft.PopupMenuItem(content=usuario_item, on_click=lambda e: usuario(e, page)),
+            ft.PopupMenuItem(content=cliente_item, on_click=lambda e: cliente(e, page,name)),
+            ft.PopupMenuItem(content=proveedor_item, on_click=lambda e:proveedor(e, page,name)),
+            ft.PopupMenuItem(content=repuesto_item, on_click=lambda e: Repuesto(e, page,name)),
+            ft.PopupMenuItem(content=empleado_item, on_click=lambda e: empleado(e, page,name)),
+            ft.PopupMenuItem(content=usuario_item, on_click=lambda e: usuario(e, page,name)),
         ],
         content=ft.Text("Herramientas"), tooltip="Administrador de archivos maestros"
         
@@ -130,8 +127,8 @@ def menu_principal(page: ft.Page,name):
     
     administracion = ft.PopupMenuButton(
         items=[
-            ft.PopupMenuItem(content=ficha_tecnica_item),#, on_click=lambda e: cliente(e, page)),
-            ft.PopupMenuItem(content=presupuesto_icono_item),#, on_click=lambda e:proveedor(e, page)),
+            ft.PopupMenuItem(content=ficha_tecnica_item),
+            ft.PopupMenuItem(content=presupuesto_icono_item),
         ],
         content=ft.Text("Administracion"), tooltip="Administracion de presupuesto y ficha tecnica"
         
@@ -192,33 +189,33 @@ def menu_principal(page: ft.Page,name):
     
     )
 
-def cliente(e, page: ft.Page):
+def cliente(e, page: ft.Page,name):
     page.controls.clear()
-    menu_principal(page,nombre)
+    menu_principal(page,name)
     Herramienta_Cliente(page)
     page.update()
     
-def proveedor(e, page: ft.Page):
+def proveedor(e, page: ft.Page,name):
     page.controls.clear()
-    menu_principal(page,nombre)
+    menu_principal(page,name)
     Herramienta_Provedor(page)
     page.update()
 
-def empleado(e, page: ft.Page):
+def empleado(e, page: ft.Page,name):
     page.controls.clear()
-    menu_principal(page,nombre)
+    menu_principal(page,name)
     Herramienta_empleado(page)
     page.update()
 
-def usuario(e, page: ft.Page):
+def usuario(e, page: ft.Page,name):
     page.controls.clear()
-    menu_principal(page,nombre)
+    menu_principal(page,name)
     Herramienta_Usuario(page)
     page.update()
 
-def Repuesto(e, page: ft.Page):
+def Repuesto(e, page: ft.Page,name):
     page.controls.clear()
-    menu_principal(page,nombre)
+    menu_principal(page,name)
     Herramienta_Repuesto(page)
     page.update()
 
