@@ -56,12 +56,15 @@ def insertar_Provedor(cod_Provedor, dni, nombre, apellido, tel, dir_):
         cursor.close()
         conn.close()
 
-def eliminar_Provedor(dni_Provedor):
+
+
+def eliminar_Provedor(c):
+    
     conn = conectar_bd()
     cursor = conn.cursor()
     try:
-        cursor.execute("DELETE FROM Provedor WHERE dni_Provedor = %s", (dni_Provedor,))
-        cursor.execute("DELETE FROM Persona WHERE dni = %s", (dni_Provedor,))
+        cursor.execute("DELETE FROM Provedor WHERE dni_Provedor = %s", (c[1],))
+        cursor.execute("DELETE FROM Persona WHERE dni = %s", (c[1],))
         conn.commit()
     except Exception as e:
         print("Error al eliminar Provedor:", e)
@@ -131,7 +134,7 @@ def Herramienta_Provedor(page: ft.Page):
                         
                         ft.Row([
                                 ft.IconButton(ft.Icons.EDIT, on_click=lambda e, c=c: mostrar_formulario(c)),
-                                ft.IconButton(ft.Icons.DELETE, on_click=lambda e, nombre=c[0]: eliminar_ui(nombre)),
+                                ft.IconButton(ft.Icons.DELETE, on_click=lambda e, c=c: eliminar_ui(c)),
                             ]),
                     
                 ])
@@ -145,16 +148,20 @@ def Herramienta_Provedor(page: ft.Page):
             cargar_tabla(datos)
         else:
             cargar_tabla()
-            
-    def mostrar_formulario(e=None, Provedor=None):
+
+    def actualizar_opciones():
+        filtro.options = get_options()
+        page.update
+
+    def mostrar_formulario(C=None):
         form.visible = True
-        if Provedor:
-            codigo.value = Provedor[0]
-            dni.value = Provedor[1]
-            nombre.value = Provedor[2]
-            apellido.value = Provedor[3]
-            telefono.value = Provedor[4]
-            direccion.value = Provedor[5]
+        if C:
+            codigo.value = C[0]
+            dni.value = C[1]
+            nombre.value = C[2]
+            apellido.value = C[3]
+            telefono.value = C[4]
+            direccion.value = C[5]
             codigo.disabled = True
             dni.disabled = True
             modo_edicion.value = "editar"
@@ -175,8 +182,10 @@ def Herramienta_Provedor(page: ft.Page):
         cargar_tabla()
         page.update()
 
-    def eliminar_ui(e, dni_Provedor):
-        eliminar_Provedor(dni_Provedor)
+    def eliminar_ui(c):
+        
+        eliminar_Provedor(c)
+        actualizar_opciones()
         cargar_tabla()
 
     def cancelar(e):
@@ -190,7 +199,7 @@ def Herramienta_Provedor(page: ft.Page):
 
     page.add(
         ft.Text("Provedor", size=24, weight="bold"),
-        ft.ElevatedButton("Agregar Provedor", on_click=mostrar_formulario),
+        ft.ElevatedButton("Agregar Provedor", on_click=lambda e: mostrar_formulario()),
         form,
         ft.Divider(),
         ft.Row([filtro, lupa]),

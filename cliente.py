@@ -56,12 +56,15 @@ def insertar_Cliente(cod_Cliente, dni, nombre, apellido, tel, dir_):
         cursor.close()
         conn.close()
 
-def eliminar_Cliente(dni_Cliente):
+
+
+def eliminar_Cliente(c):
+    
     conn = conectar_bd()
     cursor = conn.cursor()
     try:
-        cursor.execute("DELETE FROM Cliente WHERE dni_Cliente = %s", (dni_Cliente,))
-        cursor.execute("DELETE FROM Persona WHERE dni = %s", (dni_Cliente,))
+        cursor.execute("DELETE FROM Cliente WHERE dni_Cliente = %s", (c[1],))
+        cursor.execute("DELETE FROM Persona WHERE dni = %s", (c[1],))
         conn.commit()
     except Exception as e:
         print("Error al eliminar Cliente:", e)
@@ -131,7 +134,7 @@ def Herramienta_Cliente(page: ft.Page):
                         
                         ft.Row([
                                 ft.IconButton(ft.Icons.EDIT, on_click=lambda e, c=c: mostrar_formulario(c)),
-                                ft.IconButton(ft.Icons.DELETE, on_click=lambda e, nombre=c[0]: eliminar_ui(nombre)),
+                                ft.IconButton(ft.Icons.DELETE, on_click=lambda e, c=c: eliminar_ui(c)),
                             ]),
                     
                 ])
@@ -145,16 +148,20 @@ def Herramienta_Cliente(page: ft.Page):
             cargar_tabla(datos)
         else:
             cargar_tabla()
-            
-    def mostrar_formulario(e=None, Cliente=None):
+
+    def actualizar_opciones():
+        filtro.options = get_options()
+        page.update
+
+    def mostrar_formulario(C=None):
         form.visible = True
-        if Cliente:
-            codigo.value = Cliente[0]
-            dni.value = Cliente[1]
-            nombre.value = Cliente[2]
-            apellido.value = Cliente[3]
-            telefono.value = Cliente[4]
-            direccion.value = Cliente[5]
+        if C:
+            codigo.value = C[0]
+            dni.value = C[1]
+            nombre.value = C[2]
+            apellido.value = C[3]
+            telefono.value = C[4]
+            direccion.value = C[5]
             codigo.disabled = True
             dni.disabled = True
             modo_edicion.value = "editar"
@@ -175,8 +182,10 @@ def Herramienta_Cliente(page: ft.Page):
         cargar_tabla()
         page.update()
 
-    def eliminar_ui(e, dni_Cliente):
-        eliminar_Cliente(dni_Cliente)
+    def eliminar_ui(c):
+        
+        eliminar_Cliente(c)
+        actualizar_opciones()
         cargar_tabla()
 
     def cancelar(e):
@@ -190,7 +199,7 @@ def Herramienta_Cliente(page: ft.Page):
 
     page.add(
         ft.Text("Cliente", size=24, weight="bold"),
-        ft.ElevatedButton("Agregar Cliente", on_click=mostrar_formulario),
+        ft.ElevatedButton("Agregar Cliente", on_click=lambda e: mostrar_formulario()),
         form,
         ft.Divider(),
         ft.Row([filtro, lupa]),

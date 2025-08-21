@@ -3,7 +3,7 @@ import mysql.connector
 
 
 from cliente import Herramienta_Cliente
-from Empleado import Herramienta_empleado
+from Empleado import Herramienta_Empleado
 from Provedor import Herramienta_Provedor
 from Repuesto import Herramienta_Repuesto
 from usuario import Herramienta_Usuario
@@ -204,7 +204,7 @@ def proveedor(e, page: ft.Page,name):
 def empleado(e, page: ft.Page,name):
     page.controls.clear()
     menu_principal(page,name)
-    Herramienta_empleado(page)
+    Herramienta_Empleado(page)
     page.update()
 
 def usuario(e, page: ft.Page,name):
