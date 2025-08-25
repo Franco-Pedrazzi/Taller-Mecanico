@@ -63,6 +63,7 @@ def eliminar_Empleado(c):
     conn = conectar_bd()
     cursor = conn.cursor()
     try:
+        cursor.execute("DELETE FROM Usuarios WHERE legajo = %s", (c[1],))
         cursor.execute("DELETE FROM Empleado WHERE dni_Empleado = %s", (c[1],))
         cursor.execute("DELETE FROM Persona WHERE dni = %s", (c[1],))
         conn.commit()

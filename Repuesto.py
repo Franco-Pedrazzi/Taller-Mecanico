@@ -130,7 +130,7 @@ def Herramienta_Repuesto(page: ft.Page):
         page.update()
 
     def enviar_datos(e):
-        if not nombre.value.strip():
+        if not nombre.value:
             page.update()
             return
 

@@ -9,6 +9,13 @@ def conectar_bd():
         database="TallerMecanico"
     )
 
+def get_options_legajos():
+    with conectar_bd() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT legajo FROM Empleado ORDER BY legajo")
+            resultados = cursor.fetchall()
+            return [ft.dropdown.Option(nombre[0]) for nombre in resultados]
+
 def get_options():
     with conectar_bd() as conn:
         with conn.cursor() as cursor:
@@ -29,16 +36,16 @@ def obtener_Usuario_filtrada(email):
 def obtener_Usuario():
     with conectar_bd() as conn:
         with conn.cursor() as cursor:
-            cursor.execute("SELECT email, nombre, contraseña FROM Usuarios")
+            cursor.execute("SELECT * FROM Usuarios")
             return cursor.fetchall()
 
-def insertar_Usuario(email, nombre, contraseña):
+def insertar_Usuario(email, nombre, contraseña,legajo):
     with conectar_bd() as conn:
         with conn.cursor() as cursor:
             cursor.execute("""
-                INSERT INTO Usuarios (email, nombre, contraseña)
-                VALUES (%s, %s, %s)
-            """, (email, nombre, contraseña))
+                INSERT INTO Usuarios 
+                VALUES (%s, %s, %s,%s)
+            """, (email, nombre, contraseña,legajo))
             conn.commit()
 
 def eliminar_Usuario(email):
@@ -47,14 +54,14 @@ def eliminar_Usuario(email):
             cursor.execute("DELETE FROM Usuarios WHERE email = %s", (email,))
             conn.commit()
 
-def actualizar_Usuario(email, nombre, contraseña):
+def actualizar_Usuario(email, nombre, contraseña,legajo):
     with conectar_bd() as conn:
         with conn.cursor() as cursor:
             cursor.execute("""
                 UPDATE Usuarios
-                SET nombre=%s, contraseña=%s
+                SET nombre=%s, contraseña=%s, legajo=%s
                 WHERE email=%s
-            """, (nombre, contraseña, email))
+            """, (nombre, contraseña,legajo, email))
             conn.commit()
 
 def Herramienta_Usuario(page: ft.Page):
@@ -64,13 +71,19 @@ def Herramienta_Usuario(page: ft.Page):
     email = ft.TextField(label="email")
     nombre = ft.TextField(label="nombre")
     contraseña = ft.TextField(label="contraseña")
+    legajo = ft.Dropdown(
+        border=ft.InputBorder.UNDERLINE,
+        editable=True,
+        label="legajo",
+        options=get_options_legajos(),
+    )
     modo_edicion = ft.Text()
 
     btn_guardar = ft.ElevatedButton("Guardar")
     btn_cancelar = ft.TextButton("Cancelar")
 
     form = ft.Column(
-        controls=[email, nombre, contraseña, ft.Row([btn_guardar, btn_cancelar])],
+        controls=[legajo,email, nombre, contraseña, ft.Row([btn_guardar, btn_cancelar])],
         visible=False
     )
 
@@ -94,6 +107,7 @@ def Herramienta_Usuario(page: ft.Page):
         tabla.controls.clear()
         for c in datos:
                 tabla.controls.append(ft.Row([
+                        ft.Text(str(c[3])),
                         ft.Text(str(c[0])),
                         ft.Text(str(c[1])),
                         
@@ -117,34 +131,35 @@ def Herramienta_Usuario(page: ft.Page):
     def mostrar_formulario(Usuario=None):
         form.visible = True
         if Usuario:
+            legajo.value = str(Usuario[3])
             email.value = Usuario[0]
             nombre.value = str(Usuario[1])
             contraseña.value = str(Usuario[2])
             email.disabled = True
             modo_edicion.value = "editar"
         else:
-            email.value = nombre.value = contraseña.value = ""
+            email.value = nombre.value = contraseña.value = legajo.value= ""
             modo_edicion.value = ""
             email.disabled = False
         page.update()
 
     def enviar_datos(e):
-        if not email.value.strip():
+        if not email.value:
             page.update()
             return
 
         try:
             nombre_val = str(nombre.value)
             contraseña_val = int(contraseña.value)
-
+            legajo_val = int(legajo.value)
         except ValueError:
             page.update()
             return
 
         if modo_edicion.value == "editar":
-            actualizar_Usuario(email.value, nombre_val, contraseña_val)
+            actualizar_Usuario(email.value, nombre_val, contraseña_val,legajo_val)
         else:
-            insertar_Usuario(email.value, nombre_val, contraseña_val)
+            insertar_Usuario(email.value, nombre_val, contraseña_val,legajo_val)
         filtro.options=get_options()
          
         form.visible = False
