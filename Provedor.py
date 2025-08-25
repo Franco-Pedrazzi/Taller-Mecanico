@@ -79,9 +79,6 @@ def actualizar_Provedor(cod_Provedor, dni, nombre, apellido, tel, dir_):
         cursor.execute("""
             UPDATE Persona SET nombre=%s, apellido=%s, tel=%s, dir=%s WHERE dni=%s
         """, (nombre, apellido, tel, dir_, dni))
-        cursor.execute("""
-            UPDATE Provedor SET cod_Provedor=%s WHERE dni_Provedor=%s
-        """, (cod_Provedor, dni))
         conn.commit()
     except Exception as e:
         print("Error al actualizar Provedor:", e)

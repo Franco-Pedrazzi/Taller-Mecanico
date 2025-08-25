@@ -63,7 +63,7 @@ def eliminar_Empleado(c):
     conn = conectar_bd()
     cursor = conn.cursor()
     try:
-        cursor.execute("DELETE FROM Usuarios WHERE legajo = %s", (c[1],))
+        cursor.execute("DELETE FROM Usuarios WHERE legajo = %s", (c[0],))
         cursor.execute("DELETE FROM Empleado WHERE dni_Empleado = %s", (c[1],))
         cursor.execute("DELETE FROM Persona WHERE dni = %s", (c[1],))
         conn.commit()
@@ -78,12 +78,15 @@ def actualizar_Empleado(legajo, dni, nombre, apellido, tel, dir_):
     cursor = conn.cursor()
     try:
         cursor.execute("""
-            UPDATE Persona SET nombre=%s, apellido=%s, tel=%s, dir=%s WHERE dni=%s
+            UPDATE Persona SET nombre=%s, apellido=%s, tel=%s, dir=%s 
+            WHERE dni=%s
         """, (nombre, apellido, tel, dir_, dni))
+
         cursor.execute("""
-            UPDATE Empleado SET legajo=%s WHERE dni_Empleado=%s
-        """, (legajo, dni))
+            UPDATE Usuarios SET nombre=%s WHERE legajo=%s
+        """, (nombre,legajo ))
         conn.commit()
+
     except Exception as e:
         print("Error al actualizar Empleado:", e)
     finally:

@@ -54,7 +54,6 @@ CREATE TABLE `Vehiculo` (
    FOREIGN KEY (dni_cliente) REFERENCES Persona(dni)
 );
 
-#DROP TABLE IF EXISTS `Reparaciones`;
 
 
 CREATE TABLE `Repuesto` (
@@ -88,10 +87,13 @@ CREATE TABLE `Repuesto_Reparacion` (
   FOREIGN KEY (`reparacion_id`) REFERENCES `Reparaciones` (`id`)
 );
 
-CREATE TABLE IF NOT EXISTS Usuarios (
+CREATE TABLE Usuarios (
   email VARCHAR(150) PRIMARY KEY,
   nombre VARCHAR(100) NOT NULL,
-  contraseña  VARCHAR(150) NOT NULL
+  contraseña  VARCHAR(150) NOT NULL,
+  legajo INT NOT NULL,
+  FOREIGN KEY (`legajo`) REFERENCES `Empleado` (`legajo`)
+  
 );
 
 CREATE TABLE `Ficha_Tecnica` (
@@ -103,5 +105,6 @@ CREATE TABLE `Ficha_Tecnica` (
   `total`float,
   FOREIGN KEY (`Vehiculo_Matricula`) REFERENCES `Vehiculo` (`matricula`)
 );
-
-insert into Usuarios values ("Robert@gmail.com","Roberto","1234"), ("Fran@gmail.com","Franchesco","1234"), ("Jos@gmail.com","Josue","1234"),("1","prueba","1");
+insert into Persona values(1,"Name","LastName","12","12");
+insert into Empleado values (1,1);
+insert into Usuarios values ("Robert@gmail.com","Name","1234",1), ("Fran@gmail.com","Name","1234",1), ("Jos@gmail.com","Name","1234",1),("1","Name","1",1);

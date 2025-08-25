@@ -27,8 +27,7 @@ def obtener_Usuario_filtrada(email):
     with conectar_bd() as conn:
         with conn.cursor() as cursor:
             cursor.execute("""
-                SELECT email, nombre, contraseña
-                FROM Usuarios
+                SELECT * FROM Usuarios
                 WHERE email LIKE %s
             """, (f"%{email}%",))
             return cursor.fetchall()
@@ -39,13 +38,29 @@ def obtener_Usuario():
             cursor.execute("SELECT * FROM Usuarios")
             return cursor.fetchall()
 
-def insertar_Usuario(email, nombre, contraseña,legajo):
+def insertar_Usuario(email, contraseña,legajo):
+
     with conectar_bd() as conn:
         with conn.cursor() as cursor:
+            print("\n11111111111")
+            cursor.execute("""
+                SELECT dni_empleado 
+                FROM Empleado
+                WHERE legajo=%s
+            """, (legajo,))
+            dni=cursor.fetchone()
+            print("\nsadsadsaasdasd")
+            cursor.execute("""
+                SELECT nombre 
+                FROM Persona
+                WHERE dni=%s
+            """, (dni[0],))
+            
+            nombre=cursor.fetchone()
             cursor.execute("""
                 INSERT INTO Usuarios 
                 VALUES (%s, %s, %s,%s)
-            """, (email, nombre, contraseña,legajo))
+            """, (email, nombre[0], contraseña,legajo))
             conn.commit()
 
 def eliminar_Usuario(email):
@@ -54,14 +69,14 @@ def eliminar_Usuario(email):
             cursor.execute("DELETE FROM Usuarios WHERE email = %s", (email,))
             conn.commit()
 
-def actualizar_Usuario(email, nombre, contraseña,legajo):
+def actualizar_Usuario(email, contraseña,legajo):
     with conectar_bd() as conn:
         with conn.cursor() as cursor:
             cursor.execute("""
                 UPDATE Usuarios
-                SET nombre=%s, contraseña=%s, legajo=%s
+                SET contraseña=%s, legajo=%s
                 WHERE email=%s
-            """, (nombre, contraseña,legajo, email))
+            """, (contraseña,legajo, email))
             conn.commit()
 
 def Herramienta_Usuario(page: ft.Page):
@@ -69,7 +84,6 @@ def Herramienta_Usuario(page: ft.Page):
     page.scroll = ft.ScrollMode.AUTO
 
     email = ft.TextField(label="email")
-    nombre = ft.TextField(label="nombre")
     contraseña = ft.TextField(label="contraseña")
     legajo = ft.Dropdown(
         border=ft.InputBorder.UNDERLINE,
@@ -83,7 +97,7 @@ def Herramienta_Usuario(page: ft.Page):
     btn_cancelar = ft.TextButton("Cancelar")
 
     form = ft.Column(
-        controls=[legajo,email, nombre, contraseña, ft.Row([btn_guardar, btn_cancelar])],
+        controls=[legajo,email, contraseña, ft.Row([btn_guardar, btn_cancelar])],
         visible=False
     )
 
@@ -133,12 +147,11 @@ def Herramienta_Usuario(page: ft.Page):
         if Usuario:
             legajo.value = str(Usuario[3])
             email.value = Usuario[0]
-            nombre.value = str(Usuario[1])
             contraseña.value = str(Usuario[2])
             email.disabled = True
             modo_edicion.value = "editar"
         else:
-            email.value = nombre.value = contraseña.value = legajo.value= ""
+            email.value = contraseña.value = legajo.value= ""
             modo_edicion.value = ""
             email.disabled = False
         page.update()
@@ -149,7 +162,6 @@ def Herramienta_Usuario(page: ft.Page):
             return
 
         try:
-            nombre_val = str(nombre.value)
             contraseña_val = int(contraseña.value)
             legajo_val = int(legajo.value)
         except ValueError:
@@ -157,9 +169,9 @@ def Herramienta_Usuario(page: ft.Page):
             return
 
         if modo_edicion.value == "editar":
-            actualizar_Usuario(email.value, nombre_val, contraseña_val,legajo_val)
+            actualizar_Usuario(email.value, contraseña_val,legajo_val)
         else:
-            insertar_Usuario(email.value, nombre_val, contraseña_val,legajo_val)
+            insertar_Usuario(email.value, contraseña_val,legajo_val)
         filtro.options=get_options()
          
         form.visible = False

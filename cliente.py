@@ -1,5 +1,6 @@
 import flet as ft
 import mysql.connector
+from Vehiculo import Herramienta_Vehiculo
 
 def conectar_bd():
     return mysql.connector.connect(
@@ -79,9 +80,6 @@ def actualizar_Cliente(cod_Cliente, dni, nombre, apellido, tel, dir_):
         cursor.execute("""
             UPDATE Persona SET nombre=%s, apellido=%s, tel=%s, dir=%s WHERE dni=%s
         """, (nombre, apellido, tel, dir_, dni))
-        cursor.execute("""
-            UPDATE Cliente SET cod_Cliente=%s WHERE dni_Cliente=%s
-        """, (cod_Cliente, dni))
         conn.commit()
     except Exception as e:
         print("Error al actualizar Cliente:", e)
@@ -90,6 +88,8 @@ def actualizar_Cliente(cod_Cliente, dni, nombre, apellido, tel, dir_):
         conn.close()
 
 def Herramienta_Cliente(page: ft.Page):
+
+    
     page.title = "Gestion de Cliente"
     page.scroll = ft.ScrollMode.AUTO
 
@@ -125,6 +125,7 @@ def Herramienta_Cliente(page: ft.Page):
         tabla.controls.clear()
         for c in datos:
                 tabla.controls.append(ft.Row([
+                        ft.Checkbox(value=False,on_change=lambda e, c=c:checkbox_changed(e,c)),
                         ft.Text(str(c[0])),
                         ft.Text(str(c[1])),
                         ft.Text(str(c[2])),
@@ -141,6 +142,21 @@ def Herramienta_Cliente(page: ft.Page):
             )
         page.update()
 
+    def checkbox_changed(e, c):
+        if e.control.value:  
+            for row in tabla.controls:
+                checkbox = row.controls[0] 
+                checkbox.disabled = True
+            e.control.disabled = False 
+            Row.controls.append(Herramienta_Vehiculo(page,c))
+            page.update()
+        else:
+            Row.controls.pop(-1)
+            for row in tabla.controls:
+                checkbox = row.controls[0]
+                checkbox.disabled = False
+        tabla.update()
+        
     def filtrar_tabla(e):
         if filtro.value:
             datos = obtener_Cliente_filtrada(filtro.value)
@@ -196,15 +212,16 @@ def Herramienta_Cliente(page: ft.Page):
     btn_cancelar.on_click = cancelar
 
     lupa = ft.IconButton(tooltip="Filtrar", icon=ft.Icons.SEARCH, on_click=filtrar_tabla)
-
+    
+    Row=ft.Row([tabla])
+    
     page.add(
         ft.Text("Cliente", size=24, weight="bold"),
         ft.ElevatedButton("Agregar Cliente", on_click=lambda e: mostrar_formulario()),
         form,
         ft.Divider(),
         ft.Row([filtro, lupa]),
-        tabla
-    )
+        Row)
 
     cargar_tabla()
 
