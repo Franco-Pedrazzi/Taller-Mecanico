@@ -42,14 +42,14 @@ def obtener_Cliente():
     conn.close()
     return resultados
 
-def insertar_Cliente(cod_Cliente, dni, nombre, apellido, tel, dir_):
+def insertar_Cliente(dni, nombre, apellido, tel, dir_):
     conn = conectar_bd()
     cursor = conn.cursor()
     try:
         cursor.execute("INSERT INTO Persona (dni, nombre, apellido, tel, dir) VALUES (%s, %s, %s, %s, %s)",
                        (dni, nombre, apellido, tel, dir_))
-        cursor.execute("INSERT INTO Cliente (cod_Cliente, dni_Cliente) VALUES (%s, %s)",
-                       (cod_Cliente, dni))
+        cursor.execute("INSERT INTO Cliente (dni_Cliente) VALUES (%s)",
+                       (dni,))
         conn.commit()
     except Exception as e:
         print("Error al insertar Cliente:", e)
@@ -73,7 +73,7 @@ def eliminar_Cliente(c):
         cursor.close()
         conn.close()
 
-def actualizar_Cliente(cod_Cliente, dni, nombre, apellido, tel, dir_):
+def actualizar_Cliente(dni, nombre, apellido, tel, dir_):
     conn = conectar_bd()
     cursor = conn.cursor()
     try:
@@ -98,14 +98,13 @@ def Herramienta_Cliente(page: ft.Page):
     dni = ft.TextField(label="DNI")
     telefono = ft.TextField(label="Telefono")
     direccion = ft.TextField(label="Direccion")
-    codigo = ft.TextField(label="Codigo Cliente")
     modo_edicion = ft.Text() 
 
     btn_guardar = ft.ElevatedButton("Guardar")
     btn_cancelar = ft.TextButton("Cancelar")
 
     form = ft.Column(
-        controls=[codigo, dni, nombre, apellido, telefono, direccion, ft.Row([btn_guardar, btn_cancelar])],
+        controls=[dni, nombre, apellido, telefono, direccion, ft.Row([btn_guardar, btn_cancelar])],
         visible=False
     )
     tabla = ft.Column()
@@ -152,6 +151,7 @@ def Herramienta_Cliente(page: ft.Page):
             page.update()
         else:
             Row.controls.pop(-1)
+            page.update()
             for row in tabla.controls:
                 checkbox = row.controls[0]
                 checkbox.disabled = False
@@ -172,27 +172,24 @@ def Herramienta_Cliente(page: ft.Page):
     def mostrar_formulario(C=None):
         form.visible = True
         if C:
-            codigo.value = C[0]
             dni.value = C[1]
             nombre.value = C[2]
             apellido.value = C[3]
             telefono.value = C[4]
             direccion.value = C[5]
-            codigo.disabled = True
             dni.disabled = True
             modo_edicion.value = "editar"
         else:
-            codigo.value = dni.value = nombre.value = apellido.value = telefono.value = direccion.value = ""
-            codigo.disabled = False
+            dni.value = nombre.value = apellido.value = telefono.value = direccion.value = ""
             dni.disabled = False
             modo_edicion.value = ""
         page.update()
 
     def enviar_datos(e):
         if modo_edicion.value == "editar":
-            actualizar_Cliente(codigo.value, dni.value, nombre.value, apellido.value, telefono.value, direccion.value)
+            actualizar_Cliente(dni.value, nombre.value, apellido.value, telefono.value, direccion.value)
         else:
-            insertar_Cliente(codigo.value, dni.value, nombre.value, apellido.value, telefono.value, direccion.value)
+            insertar_Cliente(dni.value, nombre.value, apellido.value, telefono.value, direccion.value)
         form.visible = False
         filtro.options = get_options()
         cargar_tabla()

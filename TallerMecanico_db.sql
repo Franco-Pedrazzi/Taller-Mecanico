@@ -11,7 +11,7 @@ CREATE TABLE `Persona` (
 );
 
 CREATE TABLE `Cliente` (
-  `cod_cliente` varchar(10) PRIMARY KEY NOT NULL,
+  `cod_cliente` int PRIMARY KEY auto_increment,
   `dni_cliente` varchar(10)  NOT NULL
 );
 
