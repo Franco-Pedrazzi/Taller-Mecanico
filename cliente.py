@@ -64,6 +64,7 @@ def eliminar_Cliente(c):
     conn = conectar_bd()
     cursor = conn.cursor()
     try:
+        cursor.execute("DELETE FROM Vehiculo WHERE dni_cliente = %s", (c[1],))
         cursor.execute("DELETE FROM Cliente WHERE dni_Cliente = %s", (c[1],))
         cursor.execute("DELETE FROM Persona WHERE dni = %s", (c[1],))
         conn.commit()
