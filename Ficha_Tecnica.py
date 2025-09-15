@@ -14,27 +14,27 @@ def conectar_bd():
 def get_options():
     with conectar_bd() as conn:
         with conn.cursor() as cursor:
-            cursor.execute("SELECT cod_Cliente FROM Cliente ORDER BY cod_Cliente")
+            cursor.execute("SELECT cod_Cliente FROM Ficha_Tecnica ORDER BY cod_Cliente")
             resultados = cursor.fetchall()
             return [ft.dropdown.Option(nombre[0]) for nombre in resultados]
 
-def obtener_Cliente_filtrada(nombre):
+def obtener_Ficha_Tecnica_filtrada(nombre):
     with conectar_bd() as conn:
         with conn.cursor() as cursor:
             cursor.execute("""
                 SELECT c.cod_Cliente, p.dni, p.nombre, p.apellido, p.tel, p.dir
-                FROM Cliente c
+                FROM Ficha_Tecnica c
                 JOIN Persona p ON c.dni_Cliente = p.dni
                 WHERE c.cod_Cliente LIKE %s
             """, (nombre,))
             return cursor.fetchall()
 
-def obtener_Cliente():
+def obtener_Ficha_Tecnica():
     conn = conectar_bd()
     cursor = conn.cursor()
     cursor.execute("""
         SELECT c.cod_Cliente, p.dni, p.nombre, p.apellido, p.tel, p.dir
-        FROM Cliente c
+        FROM Ficha_Tecnica c
         JOIN Persona p ON c.dni_Cliente = p.dni
     """)
     resultados = cursor.fetchall()
@@ -42,39 +42,39 @@ def obtener_Cliente():
     conn.close()
     return resultados
 
-def insertar_Cliente(dni, nombre, apellido, tel, dir_):
+def insertar_Ficha_Tecnica(dni, nombre, apellido, tel, dir_):
     conn = conectar_bd()
     cursor = conn.cursor()
     try:
         cursor.execute("INSERT INTO Persona (dni, nombre, apellido, tel, dir) VALUES (%s, %s, %s, %s, %s)",
                        (dni, nombre, apellido, tel, dir_))
-        cursor.execute("INSERT INTO Cliente (dni_Cliente) VALUES (%s)",
+        cursor.execute("INSERT INTO Ficha_Tecnica (dni_Cliente) VALUES (%s)",
                        (dni,))
         conn.commit()
     except Exception as e:
-        print("Error al insertar Cliente:", e)
+        print("Error al insertar Ficha_Tecnica:", e)
     finally:
         cursor.close()
         conn.close()
 
 
 
-def eliminar_Cliente(c):
+def eliminar_Ficha_Tecnica(c):
     
     conn = conectar_bd()
     cursor = conn.cursor()
     try:
         cursor.execute("DELETE FROM Vehiculo WHERE dni_cliente = %s", (c[1],))
-        cursor.execute("DELETE FROM Cliente WHERE dni_Cliente = %s", (c[1],))
+        cursor.execute("DELETE FROM Ficha_Tecnica WHERE dni_Cliente = %s", (c[1],))
         cursor.execute("DELETE FROM Persona WHERE dni = %s", (c[1],))
         conn.commit()
     except Exception as e:
-        print("Error al eliminar Cliente:", e)
+        print("Error al eliminar Ficha_Tecnica:", e)
     finally:
         cursor.close()
         conn.close()
 
-def actualizar_Cliente(dni, nombre, apellido, tel, dir_):
+def actualizar_Ficha_Tecnica(dni, nombre, apellido, tel, dir_):
     conn = conectar_bd()
     cursor = conn.cursor()
     try:
@@ -83,18 +83,18 @@ def actualizar_Cliente(dni, nombre, apellido, tel, dir_):
         """, (nombre, apellido, tel, dir_, dni))
         conn.commit()
     except Exception as e:
-        print("Error al actualizar Cliente:", e)
+        print("Error al actualizar Ficha_Tecnica:", e)
     finally:
         cursor.close()
         conn.close()
 
-def Herramienta_Cliente(page: ft.Page):
+def Herramienta_Ficha_Tecnica(page: ft.Page):
 
     
-    page.title = "Gestion de Cliente"
+    page.title = "Gestion de Ficha_Tecnica"
     page.scroll = ft.ScrollMode.AUTO
 
-    nombre = ft.TextField(label="Nombre")
+    matricula_vehiculo = ft.TextField(label="Nombre")
     apellido = ft.TextField(label="Apellido")
     dni = ft.TextField(label="DNI")
     telefono = ft.TextField(label="Telefono")
@@ -118,10 +118,10 @@ def Herramienta_Cliente(page: ft.Page):
     )
 
 
-    def cargar_tabla(Cliente=None):
-        datos = Cliente
-        if Cliente is None:
-            datos= obtener_Cliente()
+    def cargar_tabla(Ficha_Tecnica=None):
+        datos = Ficha_Tecnica
+        if Ficha_Tecnica is None:
+            datos= obtener_Ficha_Tecnica()
         tabla.controls.clear()
         for c in datos:
                 tabla.controls.append(ft.Row([
@@ -163,7 +163,7 @@ def Herramienta_Cliente(page: ft.Page):
         if len(Row.controls)==2:
             Row.controls.pop(-1)
         if filtro.value:
-            datos = obtener_Cliente_filtrada(filtro.value)
+            datos = obtener_Ficha_Tecnica_filtrada(filtro.value)
             filtro.value = ""
             cargar_tabla(datos)
         else:
@@ -191,9 +191,9 @@ def Herramienta_Cliente(page: ft.Page):
 
     def enviar_datos(e):
         if modo_edicion.value == "editar":
-            actualizar_Cliente(dni.value, nombre.value, apellido.value, telefono.value, direccion.value)
+            actualizar_Ficha_Tecnica(dni.value, nombre.value, apellido.value, telefono.value, direccion.value)
         else:
-            insertar_Cliente(dni.value, nombre.value, apellido.value, telefono.value, direccion.value)
+            insertar_Ficha_Tecnica(dni.value, nombre.value, apellido.value, telefono.value, direccion.value)
         
         if len(Row.controls)==2:
             Row.controls.pop(-1)
@@ -204,7 +204,7 @@ def Herramienta_Cliente(page: ft.Page):
         page.update()
 
     def eliminar_ui(c):
-        eliminar_Cliente(c)
+        eliminar_Ficha_Tecnica(c)
         actualizar_opciones()
         if len(Row.controls)==2:
             Row.controls.pop(-1)
@@ -223,8 +223,8 @@ def Herramienta_Cliente(page: ft.Page):
     Row=ft.Row([tabla])
     
     page.add(
-        ft.Text("Cliente", size=24, weight="bold"),
-        ft.ElevatedButton("Agregar Cliente", on_click=lambda e: mostrar_formulario()),
+        ft.Text("Ficha_Tecnica", size=24, weight="bold"),
+        ft.ElevatedButton("Agregar Ficha_Tecnica", on_click=lambda e: mostrar_formulario()),
         form,
         ft.Divider(),
         ft.Row([filtro, lupa]),
@@ -232,5 +232,5 @@ def Herramienta_Cliente(page: ft.Page):
 
     cargar_tabla()
 
-if __name__ == "__Herramienta_Cliente__":
-    ft.app(target=Herramienta_Cliente)
+if __name__ == "__Herramienta_Ficha_Tecnica__":
+    ft.app(target=Herramienta_Ficha_Tecnica)

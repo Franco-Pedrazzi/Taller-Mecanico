@@ -7,7 +7,7 @@ from Empleado import Herramienta_Empleado
 from Provedor import Herramienta_Provedor
 from Repuesto import Herramienta_Repuesto
 from usuario import Herramienta_Usuario
-
+from Ficha_Tecnica import Herramienta_Ficha_Tecnica
 
 
 def connect_to_db():
