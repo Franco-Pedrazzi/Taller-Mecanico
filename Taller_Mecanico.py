@@ -8,30 +8,7 @@ from Provedor import Herramienta_Provedor
 from Repuesto import Herramienta_Repuesto
 from usuario import Herramienta_Usuario
 from Ficha_Tecnica import Herramienta_Ficha_Tecnica
-
-
-def connect_to_db():
-    try:
-        connection = mysql.connector.connect(
-            host='localhost',
-            port='3306',
-            user='root',
-            password='123456',
-            database='TallerMecanico',
-            ssl_disabled=True
-        )
-        if connection.is_connected():
-            print('Conexion exitosa')
-            return connection
-    except Exception as ex:
-        print('Conexion erronea')
-        print(ex)
-        return None
-
-connection = connect_to_db()
-
-
-
+from classes import Usuarios
 
 def menu_principal(page: ft.Page,name):
     page.window.maximized=True
@@ -226,22 +203,7 @@ def log(page: ft.Page):
     Password = ft.TextField(label="Contraseña", password=True, can_reveal_password=True)
 
     def login(e):
-        conn = connect_to_db()
-        cursor = conn.cursor()
-        try:
-            cursor.execute("""
-                SELECT nombre
-                FROM Usuarios
-                WHERE email=%s AND contraseña=%s
-            """, (Email.value, Password.value))
-            resultado = cursor.fetchone()
-        except Exception as ex:
-            print("Error: ", ex)
-            resultado = None
-        finally:
-            cursor.close()
-            conn.close()
-
+        resultado=Usuarios.Login(Email.value, Password.value)
         if resultado:
             page.session.set("usuario", resultado[0])
             page.controls.clear()

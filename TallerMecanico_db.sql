@@ -16,12 +16,12 @@ CREATE TABLE `Cliente` (
 );
 
 CREATE TABLE `Empleado` (
-  `legajo` INT PRIMARY KEY NOT NULL,
+  `legajo` int auto_increment PRIMARY KEY,
   `dni_empleado` varchar(10) NOT NULL
 );
 
 CREATE TABLE `Provedor` (
-  `cod_Provedor` varchar(10) PRIMARY KEY NOT NULL,
+  `cod_Provedor` int auto_increment PRIMARY KEY,
   `dni_Provedor` varchar(10)  NOT NULL
 );
 
@@ -64,7 +64,7 @@ CREATE TABLE `Repuesto` (
 
 CREATE TABLE `Reparaciones` (
   `id` int auto_increment PRIMARY KEY,
-  `fecha_entrada` date,
+  `fecha_entrada` DATETIME NULL DEFAULT CURRENT_TIMESTAMP,
   `matricula_vehiculo` varchar(25),
   FOREIGN KEY (`matricula_vehiculo`) REFERENCES `Vehiculo` (`matricula`)
 );
@@ -87,14 +87,7 @@ CREATE TABLE `Repuesto_Reparacion` (
   FOREIGN KEY (`reparacion_id`) REFERENCES `Reparaciones` (`id`)
 );
 
-CREATE TABLE Usuarios (
-  email VARCHAR(150) PRIMARY KEY,
-  nombre VARCHAR(100) NOT NULL,
-  contraseña  VARCHAR(150) NOT NULL,
-  legajo INT NOT NULL,
-  FOREIGN KEY (`legajo`) REFERENCES `Empleado` (`legajo`)
-  
-);
+
 
 CREATE TABLE `Ficha_Tecnica` (
   `id_FT` int auto_increment primary Key,
@@ -105,6 +98,16 @@ CREATE TABLE `Ficha_Tecnica` (
   `total`float,
   FOREIGN KEY (`Vehiculo_Matricula`) REFERENCES `Vehiculo` (`matricula`)
 );
+
+CREATE TABLE Usuarios (
+  email VARCHAR(150) PRIMARY KEY,
+  nombre VARCHAR(100) NOT NULL,
+  contraseña  VARCHAR(150) NOT NULL,
+  legajo INT NOT NULL,
+  FOREIGN KEY (`legajo`) REFERENCES `Empleado` (`legajo`)
+  
+);
+
 insert into Persona values(1,"Name","LastName","12","12");
 insert into Empleado values (1,1);
 insert into Usuarios values ("Robert@gmail.com","Name","1234",1), ("Fran@gmail.com","Name","1234",1), ("Jos@gmail.com","Name","1234",1),("1","Name","1",1);

@@ -1,83 +1,6 @@
 import flet as ft
 import mysql.connector
-
-def conectar_bd():
-    return mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="123456",
-        database="TallerMecanico"
-    )
-
-def get_options_legajos():
-    with conectar_bd() as conn:
-        with conn.cursor() as cursor:
-            cursor.execute("SELECT legajo FROM Empleado ORDER BY legajo")
-            resultados = cursor.fetchall()
-            return [ft.dropdown.Option(nombre[0]) for nombre in resultados]
-
-def get_options():
-    with conectar_bd() as conn:
-        with conn.cursor() as cursor:
-            cursor.execute("SELECT email FROM Usuarios ORDER BY email")
-            resultados = cursor.fetchall()
-            return [ft.dropdown.Option(email[0]) for email in resultados]
-
-def obtener_Usuario_filtrada(email):
-    with conectar_bd() as conn:
-        with conn.cursor() as cursor:
-            cursor.execute("""
-                SELECT * FROM Usuarios
-                WHERE email LIKE %s
-            """, (f"%{email}%",))
-            return cursor.fetchall()
-
-def obtener_Usuario():
-    with conectar_bd() as conn:
-        with conn.cursor() as cursor:
-            cursor.execute("SELECT * FROM Usuarios")
-            return cursor.fetchall()
-
-def insertar_Usuario(email, contraseña,legajo):
-
-    with conectar_bd() as conn:
-        with conn.cursor() as cursor:
-            print("\n11111111111")
-            cursor.execute("""
-                SELECT dni_empleado 
-                FROM Empleado
-                WHERE legajo=%s
-            """, (legajo,))
-            dni=cursor.fetchone()
-            print("\nsadsadsaasdasd")
-            cursor.execute("""
-                SELECT nombre 
-                FROM Persona
-                WHERE dni=%s
-            """, (dni[0],))
-            
-            nombre=cursor.fetchone()
-            cursor.execute("""
-                INSERT INTO Usuarios 
-                VALUES (%s, %s, %s,%s)
-            """, (email, nombre[0], contraseña,legajo))
-            conn.commit()
-
-def eliminar_Usuario(email):
-    with conectar_bd() as conn:
-        with conn.cursor() as cursor:
-            cursor.execute("DELETE FROM Usuarios WHERE email = %s", (email,))
-            conn.commit()
-
-def actualizar_Usuario(email, contraseña,legajo):
-    with conectar_bd() as conn:
-        with conn.cursor() as cursor:
-            cursor.execute("""
-                UPDATE Usuarios
-                SET contraseña=%s, legajo=%s
-                WHERE email=%s
-            """, (contraseña,legajo, email))
-            conn.commit()
+from classes import Usuarios
 
 def Herramienta_Usuario(page: ft.Page):
     page.title = "Gestion de Usuarios"
@@ -89,7 +12,7 @@ def Herramienta_Usuario(page: ft.Page):
         border=ft.InputBorder.UNDERLINE,
         editable=True,
         label="legajo",
-        options=get_options_legajos(),
+        options=Usuarios.get_options_legajos(),
     )
     modo_edicion = ft.Text()
 
@@ -107,17 +30,17 @@ def Herramienta_Usuario(page: ft.Page):
         border=ft.InputBorder.UNDERLINE,
         editable=True,
         label="Filtro",
-        options=get_options(),
+        options=Usuarios.get_options(),
     )
 
     def actualizar_opciones():
-        filtro.options = get_options()
+        filtro.options = Usuarios.get_options()
         page.update()
 
     def cargar_tabla(Usuario=None):
         datos = Usuario
         if Usuario is None:
-            datos= obtener_Usuario()
+            datos= Usuarios.obtener_Usuario()
         tabla.controls.clear()
         for c in datos:
                 tabla.controls.append(ft.Row([
@@ -136,7 +59,7 @@ def Herramienta_Usuario(page: ft.Page):
 
     def filtrar_tabla(e):
         if filtro.value:
-            datos = obtener_Usuario_filtrada(filtro.value)
+            datos = Usuarios.obtener_Usuario_filtrada(filtro.value)
             filtro.value = ""
             cargar_tabla(datos)
         else:
@@ -169,16 +92,16 @@ def Herramienta_Usuario(page: ft.Page):
             return
 
         if modo_edicion.value == "editar":
-            actualizar_Usuario(email.value, contraseña_val,legajo_val)
+            Usuarios.actualizar_Usuario(email.value, contraseña_val,legajo_val)
         else:
-            insertar_Usuario(email.value, contraseña_val,legajo_val)
-        filtro.options=get_options()
+            Usuarios.insertar_Usuario(email.value, contraseña_val,legajo_val)
+        filtro.options=Usuarios.get_options()
          
         form.visible = False
         cargar_tabla()
 
     def eliminar_ui(email):
-        eliminar_Usuario(email)
+        Usuarios.eliminar_Usuario(email)
         actualizar_opciones()
         cargar_tabla()
 

@@ -1,61 +1,7 @@
 import flet as ft
 import mysql.connector
+from classes import Repuestos
 
-def conectar_bd():
-    return mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="123456",
-        database="TallerMecanico"
-    )
-
-def get_options():
-    with conectar_bd() as conn:
-        with conn.cursor() as cursor:
-            cursor.execute("SELECT nombre FROM Repuesto ORDER BY nombre")
-            resultados = cursor.fetchall()
-            return [ft.dropdown.Option(nombre[0]) for nombre in resultados]
-
-def obtener_Repuesto_filtrada(nombre):
-    with conectar_bd() as conn:
-        with conn.cursor() as cursor:
-            cursor.execute("""
-                SELECT nombre, precio_x_unidad, cantidad
-                FROM Repuesto
-                WHERE nombre LIKE %s
-            """, (f"%{nombre}%",))
-            return cursor.fetchall()
-
-def obtener_Repuesto():
-    with conectar_bd() as conn:
-        with conn.cursor() as cursor:
-            cursor.execute("SELECT nombre, precio_x_unidad, cantidad FROM Repuesto")
-            return cursor.fetchall()
-
-def insertar_repuesto(nombre, precio_x_unidad, cantidad):
-    with conectar_bd() as conn:
-        with conn.cursor() as cursor:
-            cursor.execute("""
-                INSERT INTO Repuesto (nombre, precio_x_unidad, cantidad)
-                VALUES (%s, %s, %s)
-            """, (nombre, precio_x_unidad, cantidad))
-            conn.commit()
-
-def eliminar_repuesto(nombre):
-    with conectar_bd() as conn:
-        with conn.cursor() as cursor:
-            cursor.execute("DELETE FROM Repuesto WHERE nombre = %s", (nombre,))
-            conn.commit()
-
-def actualizar_repuesto(nombre, precio_x_unidad, cantidad):
-    with conectar_bd() as conn:
-        with conn.cursor() as cursor:
-            cursor.execute("""
-                UPDATE Repuesto
-                SET precio_x_unidad=%s, cantidad=%s
-                WHERE nombre=%s
-            """, (precio_x_unidad, cantidad, nombre))
-            conn.commit()
 
 def Herramienta_Repuesto(page: ft.Page):
     page.title = "Gestion de Repuestos"
@@ -80,17 +26,17 @@ def Herramienta_Repuesto(page: ft.Page):
         border=ft.InputBorder.UNDERLINE,
         editable=True,
         label="Filtro",
-        options=get_options(),
+        options=Repuestos.get_options(),
     )
 
     def actualizar_opciones():
-        filtro.options = get_options()
+        filtro.options = Repuestos.get_options()
         page.update()
 
     def cargar_tabla(Repuesto=None):
         datos = Repuesto
         if Repuesto is None:
-            datos= obtener_Repuesto()
+            datos= Repuestos.obtener_Repuesto()
         tabla.controls.clear()
         for c in datos:
                 tabla.controls.append(ft.Row([
@@ -109,7 +55,7 @@ def Herramienta_Repuesto(page: ft.Page):
 
     def filtrar_tabla(e):
         if filtro.value:
-            datos = obtener_Repuesto_filtrada(filtro.value)
+            datos = Repuestos.obtener_Repuesto_filtrada(filtro.value)
             filtro.value = ""
             cargar_tabla(datos)
         else:
@@ -143,16 +89,16 @@ def Herramienta_Repuesto(page: ft.Page):
             return
 
         if modo_edicion.value == "editar":
-            actualizar_repuesto(nombre.value, precio, cantidad_int)
+            Repuestos.actualizar_repuesto(nombre.value, precio, cantidad_int)
         else:
-            insertar_repuesto(nombre.value, precio, cantidad_int)
-        filtro.options=get_options()
+            Repuestos.insertar_repuesto(nombre.value, precio, cantidad_int)
+        filtro.options=Repuestos.get_options()
          
         form.visible = False
         cargar_tabla()
 
     def eliminar_ui(nombre_repuesto):
-        eliminar_repuesto(nombre_repuesto)
+        Repuestos.eliminar_repuesto(nombre_repuesto)
         actualizar_opciones()
         cargar_tabla()
 

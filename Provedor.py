@@ -1,90 +1,6 @@
 import flet as ft
 import mysql.connector
-
-def conectar_bd():
-    return mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="123456",
-        database="TallerMecanico"
-    )
-
-
-def get_options():
-    with conectar_bd() as conn:
-        with conn.cursor() as cursor:
-            cursor.execute("SELECT cod_Provedor FROM Provedor ORDER BY cod_Provedor")
-            resultados = cursor.fetchall()
-            return [ft.dropdown.Option(nombre[0]) for nombre in resultados]
-
-def obtener_Provedor_filtrada(nombre):
-    with conectar_bd() as conn:
-        with conn.cursor() as cursor:
-            cursor.execute("""
-                SELECT c.cod_Provedor, p.dni, p.nombre, p.apellido, p.tel, p.dir
-                FROM Provedor c
-                JOIN Persona p ON c.dni_Provedor = p.dni
-                WHERE c.cod_Provedor LIKE %s
-            """, (nombre,))
-            return cursor.fetchall()
-
-def obtener_Provedor():
-    conn = conectar_bd()
-    cursor = conn.cursor()
-    cursor.execute("""
-        SELECT c.cod_Provedor, p.dni, p.nombre, p.apellido, p.tel, p.dir
-        FROM Provedor c
-        JOIN Persona p ON c.dni_Provedor = p.dni
-    """)
-    resultados = cursor.fetchall()
-    cursor.close()
-    conn.close()
-    return resultados
-
-def insertar_Provedor(cod_Provedor, dni, nombre, apellido, tel, dir_):
-    conn = conectar_bd()
-    cursor = conn.cursor()
-    try:
-        cursor.execute("INSERT INTO Persona (dni, nombre, apellido, tel, dir) VALUES (%s, %s, %s, %s, %s)",
-                       (dni, nombre, apellido, tel, dir_))
-        cursor.execute("INSERT INTO Provedor (cod_Provedor, dni_Provedor) VALUES (%s, %s)",
-                       (cod_Provedor, dni))
-        conn.commit()
-    except Exception as e:
-        print("Error al insertar Provedor:", e)
-    finally:
-        cursor.close()
-        conn.close()
-
-
-
-def eliminar_Provedor(c):
-    
-    conn = conectar_bd()
-    cursor = conn.cursor()
-    try:
-        cursor.execute("DELETE FROM Provedor WHERE dni_Provedor = %s", (c[1],))
-        cursor.execute("DELETE FROM Persona WHERE dni = %s", (c[1],))
-        conn.commit()
-    except Exception as e:
-        print("Error al eliminar Provedor:", e)
-    finally:
-        cursor.close()
-        conn.close()
-
-def actualizar_Provedor(cod_Provedor, dni, nombre, apellido, tel, dir_):
-    conn = conectar_bd()
-    cursor = conn.cursor()
-    try:
-        cursor.execute("""
-            UPDATE Persona SET nombre=%s, apellido=%s, tel=%s, dir=%s WHERE dni=%s
-        """, (nombre, apellido, tel, dir_, dni))
-        conn.commit()
-    except Exception as e:
-        print("Error al actualizar Provedor:", e)
-    finally:
-        cursor.close()
-        conn.close()
+from classes import Provedores
 
 def Herramienta_Provedor(page: ft.Page):
     page.title = "Gestion de Provedor"
@@ -95,14 +11,13 @@ def Herramienta_Provedor(page: ft.Page):
     dni = ft.TextField(label="DNI")
     telefono = ft.TextField(label="Telefono")
     direccion = ft.TextField(label="Direccion")
-    codigo = ft.TextField(label="Codigo Provedor")
     modo_edicion = ft.Text() 
 
     btn_guardar = ft.ElevatedButton("Guardar")
     btn_cancelar = ft.TextButton("Cancelar")
 
     form = ft.Column(
-        controls=[codigo, dni, nombre, apellido, telefono, direccion, ft.Row([btn_guardar, btn_cancelar])],
+        controls=[dni, nombre, apellido, telefono, direccion, ft.Row([btn_guardar, btn_cancelar])],
         visible=False
     )
     tabla = ft.Column()
@@ -111,14 +26,14 @@ def Herramienta_Provedor(page: ft.Page):
         border=ft.InputBorder.UNDERLINE,
         editable=True,
         label="Filtro",
-        options=get_options(),
+        options=Provedores.get_options(),
     )
 
 
     def cargar_tabla(Provedor=None):
         datos = Provedor
         if Provedor is None:
-            datos= obtener_Provedor()
+            datos= Provedores.obtener_Provedor()
         tabla.controls.clear()
         for c in datos:
                 tabla.controls.append(ft.Row([
@@ -140,48 +55,45 @@ def Herramienta_Provedor(page: ft.Page):
 
     def filtrar_tabla(e):
         if filtro.value:
-            datos = obtener_Provedor_filtrada(filtro.value)
+            datos = Provedores.obtener_Provedor_filtrada(filtro.value)
             filtro.value = ""
             cargar_tabla(datos)
         else:
             cargar_tabla()
 
     def actualizar_opciones():
-        filtro.options = get_options()
+        filtro.options = Provedores.get_options()
         page.update
 
     def mostrar_formulario(C=None):
         form.visible = True
         if C:
-            codigo.value = C[0]
             dni.value = C[1]
             nombre.value = C[2]
             apellido.value = C[3]
             telefono.value = C[4]
             direccion.value = C[5]
-            codigo.disabled = True
             dni.disabled = True
             modo_edicion.value = "editar"
         else:
-            codigo.value = dni.value = nombre.value = apellido.value = telefono.value = direccion.value = ""
-            codigo.disabled = False
+            dni.value = nombre.value = apellido.value = telefono.value = direccion.value = ""
             dni.disabled = False
             modo_edicion.value = ""
         page.update()
 
     def enviar_datos(e):
         if modo_edicion.value == "editar":
-            actualizar_Provedor(codigo.value, dni.value, nombre.value, apellido.value, telefono.value, direccion.value)
+            Provedores.actualizar_Provedor(dni.value, nombre.value, apellido.value, telefono.value, direccion.value)
         else:
-            insertar_Provedor(codigo.value, dni.value, nombre.value, apellido.value, telefono.value, direccion.value)
+            Provedores.insertar_Provedor(dni.value, nombre.value, apellido.value, telefono.value, direccion.value)
         form.visible = False
-        filtro.options = get_options()
+        filtro.options = Provedores.get_options()
         cargar_tabla()
         page.update()
 
     def eliminar_ui(c):
         
-        eliminar_Provedor(c)
+        Provedores.eliminar_Provedor(c)
         actualizar_opciones()
         cargar_tabla()
 

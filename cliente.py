@@ -1,92 +1,7 @@
 import flet as ft
 import mysql.connector
 from Vehiculo import Herramienta_Vehiculo
-
-def conectar_bd():
-    return mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="123456",
-        database="TallerMecanico"
-    )
-
-
-def get_options():
-    with conectar_bd() as conn:
-        with conn.cursor() as cursor:
-            cursor.execute("SELECT cod_Cliente FROM Cliente ORDER BY cod_Cliente")
-            resultados = cursor.fetchall()
-            return [ft.dropdown.Option(nombre[0]) for nombre in resultados]
-
-def obtener_Cliente_filtrada(nombre):
-    with conectar_bd() as conn:
-        with conn.cursor() as cursor:
-            cursor.execute("""
-                SELECT c.cod_Cliente, p.dni, p.nombre, p.apellido, p.tel, p.dir
-                FROM Cliente c
-                JOIN Persona p ON c.dni_Cliente = p.dni
-                WHERE c.cod_Cliente LIKE %s
-            """, (nombre,))
-            return cursor.fetchall()
-
-def obtener_Cliente():
-    conn = conectar_bd()
-    cursor = conn.cursor()
-    cursor.execute("""
-        SELECT c.cod_Cliente, p.dni, p.nombre, p.apellido, p.tel, p.dir
-        FROM Cliente c
-        JOIN Persona p ON c.dni_Cliente = p.dni
-    """)
-    resultados = cursor.fetchall()
-    cursor.close()
-    conn.close()
-    return resultados
-
-def insertar_Cliente(dni, nombre, apellido, tel, dir_):
-    conn = conectar_bd()
-    cursor = conn.cursor()
-    try:
-        cursor.execute("INSERT INTO Persona (dni, nombre, apellido, tel, dir) VALUES (%s, %s, %s, %s, %s)",
-                       (dni, nombre, apellido, tel, dir_))
-        cursor.execute("INSERT INTO Cliente (dni_Cliente) VALUES (%s)",
-                       (dni,))
-        conn.commit()
-    except Exception as e:
-        print("Error al insertar Cliente:", e)
-    finally:
-        cursor.close()
-        conn.close()
-
-
-
-def eliminar_Cliente(c):
-    
-    conn = conectar_bd()
-    cursor = conn.cursor()
-    try:
-        cursor.execute("DELETE FROM Vehiculo WHERE dni_cliente = %s", (c[1],))
-        cursor.execute("DELETE FROM Cliente WHERE dni_Cliente = %s", (c[1],))
-        cursor.execute("DELETE FROM Persona WHERE dni = %s", (c[1],))
-        conn.commit()
-    except Exception as e:
-        print("Error al eliminar Cliente:", e)
-    finally:
-        cursor.close()
-        conn.close()
-
-def actualizar_Cliente(dni, nombre, apellido, tel, dir_):
-    conn = conectar_bd()
-    cursor = conn.cursor()
-    try:
-        cursor.execute("""
-            UPDATE Persona SET nombre=%s, apellido=%s, tel=%s, dir=%s WHERE dni=%s
-        """, (nombre, apellido, tel, dir_, dni))
-        conn.commit()
-    except Exception as e:
-        print("Error al actualizar Cliente:", e)
-    finally:
-        cursor.close()
-        conn.close()
+from classes import cliente
 
 def Herramienta_Cliente(page: ft.Page):
 
@@ -114,14 +29,14 @@ def Herramienta_Cliente(page: ft.Page):
         border=ft.InputBorder.UNDERLINE,
         editable=True,
         label="Filtro",
-        options=get_options(),
+        options=cliente.get_options(),
     )
 
 
     def cargar_tabla(Cliente=None):
         datos = Cliente
         if Cliente is None:
-            datos= obtener_Cliente()
+            datos= cliente.obtener_Cliente()
         tabla.controls.clear()
         for c in datos:
                 tabla.controls.append(ft.Row([
@@ -163,14 +78,14 @@ def Herramienta_Cliente(page: ft.Page):
         if len(Row.controls)==2:
             Row.controls.pop(-1)
         if filtro.value:
-            datos = obtener_Cliente_filtrada(filtro.value)
+            datos = cliente.obtener_Cliente_filtrada(filtro.value)
             filtro.value = ""
             cargar_tabla(datos)
         else:
             cargar_tabla()
 
     def actualizar_opciones():
-        filtro.options = get_options()
+        filtro.options = cliente.get_options()
         page.update
 
     def mostrar_formulario(C=None):
@@ -191,20 +106,20 @@ def Herramienta_Cliente(page: ft.Page):
 
     def enviar_datos(e):
         if modo_edicion.value == "editar":
-            actualizar_Cliente(dni.value, nombre.value, apellido.value, telefono.value, direccion.value)
+            cliente.actualizar_Cliente(dni.value, nombre.value, apellido.value, telefono.value, direccion.value)
         else:
-            insertar_Cliente(dni.value, nombre.value, apellido.value, telefono.value, direccion.value)
+            cliente.insertar_Cliente(dni.value, nombre.value, apellido.value, telefono.value, direccion.value)
         
         if len(Row.controls)==2:
             Row.controls.pop(-1)
         
         form.visible = False
-        filtro.options = get_options()
+        filtro.options = cliente.get_options()
         cargar_tabla()
         page.update()
 
     def eliminar_ui(c):
-        eliminar_Cliente(c)
+        cliente.eliminar_Cliente(c)
         actualizar_opciones()
         if len(Row.controls)==2:
             Row.controls.pop(-1)
