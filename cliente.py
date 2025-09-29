@@ -1,7 +1,7 @@
 import flet as ft
 import mysql.connector
 from Vehiculo import Herramienta_Vehiculo
-from classes import cliente
+from classes import cliente,Persona
 
 def Herramienta_Cliente(page: ft.Page):
 
@@ -106,9 +106,9 @@ def Herramienta_Cliente(page: ft.Page):
 
     def enviar_datos(e):
         if modo_edicion.value == "editar":
-            cliente.actualizar_Cliente(dni.value, nombre.value, apellido.value, telefono.value, direccion.value)
+            Persona.actualizar_Personas(dni.value, nombre.value, apellido.value, telefono.value, direccion.value)
         else:
-            cliente.insertar_Cliente(dni.value, nombre.value, apellido.value, telefono.value, direccion.value)
+            nuevo=cliente(dni.value, nombre.value, apellido.value, telefono.value, direccion.value)
         
         if len(Row.controls)==2:
             Row.controls.pop(-1)
@@ -119,7 +119,7 @@ def Herramienta_Cliente(page: ft.Page):
         page.update()
 
     def eliminar_ui(c):
-        cliente.eliminar_Cliente(c)
+        Persona.eliminar_Personas(c[1])
         actualizar_opciones()
         if len(Row.controls)==2:
             Row.controls.pop(-1)

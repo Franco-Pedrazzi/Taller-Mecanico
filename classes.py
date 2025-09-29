@@ -10,38 +10,76 @@ def conectar_bd():
     )
 
 class Persona:
-    def insertar_Personas(dni, nombre, apellido, tel, dir_):
+    def __init__(self, dni, nombre, apellido, tel, dir_):
+        self.dni = dni
+        self.nombre = nombre
+        self.apellido = apellido
+        self.tel = tel
+        self.dir_ = dir_
+
+    def insertar(self):
         conn = conectar_bd()
         cursor = conn.cursor()
         try:
-            cursor.execute("INSERT INTO Persona (dni, nombre, apellido, tel, dir) VALUES (%s, %s, %s, %s, %s)",
-                       (dni, nombre, apellido, tel, dir_))
+            cursor.execute(
+                "INSERT INTO Persona (dni, nombre, apellido, tel, dir) VALUES (%s, %s, %s, %s, %s)",
+                (self.dni, self.nombre, self.apellido, self.tel, self.dir_)
+            )
             conn.commit()
         except Exception as e:
             print("Error al insertar Persona:", e)
+        finally:
+            cursor.close()
+            conn.close()
 
-    def eliminar_Personas(c):
-    
+    @staticmethod
+    def eliminar_Personas(dni):
         conn = conectar_bd()
         cursor = conn.cursor()
         try:
-            cursor.execute("DELETE FROM Persona WHERE dni = %s", (c,))
+            cursor.execute("DELETE FROM Persona WHERE dni = %s", (dni,))
             conn.commit()
         except Exception as e:
             print("Error al eliminar Persona:", e)
+        finally:
+            cursor.close()
+            conn.close()
 
+    @staticmethod
     def actualizar_Personas(dni, nombre, apellido, tel, dir_):
         conn = conectar_bd()
         cursor = conn.cursor()
         try:
             cursor.execute("""
-                UPDATE Persona SET nombre=%s, apellido=%s, tel=%s, dir=%s WHERE dni=%s
+                UPDATE Persona 
+                SET nombre=%s, apellido=%s, tel=%s, dir=%s 
+                WHERE dni=%s
             """, (nombre, apellido, tel, dir_, dni))
             conn.commit()
         except Exception as e:
-            print("Error al actualizar Cliente:", e)
+            print("Error al actualizar Persona:", e)
+        finally:
+            cursor.close()
+            conn.close()
 
-class cliente(Persona):
+class cliente(Persona):   
+    def __init__(self, dni, nombre, apellido, tel, dir_):
+        super().__init__(dni, nombre, apellido, tel, dir_)
+        self.insertar()
+
+    def insertar(self):
+        super().insertar()
+        conn = conectar_bd()
+        cursor = conn.cursor()
+        try:
+            cursor.execute("INSERT INTO Cliente (dni_Cliente) VALUES (%s)", (self.dni,))
+            conn.commit()
+        except Exception as e:
+            print("Error al insertar Cliente:", e)
+        finally:
+            cursor.close()
+            conn.close()
+                             
     def get_options():
         with conectar_bd() as conn:
             with conn.cursor() as cursor:
@@ -73,40 +111,24 @@ class cliente(Persona):
         conn.close()
         return resultados
 
-    def insertar_Cliente(dni, nombre, apellido, tel, dir_):
+class Empleados(Persona):
+    def __init__(self, dni, nombre, apellido, tel, dir_):
+        super().__init__(dni, nombre, apellido, tel, dir_)
+        self.insertar()
+
+    def insertar(self):
+        super().insertar()
         conn = conectar_bd()
         cursor = conn.cursor()
         try:
-            Persona.insertar_Personas(dni, nombre, apellido, tel, dir_)
-            cursor.execute("INSERT INTO Cliente (dni_Cliente) VALUES (%s)",
-                       (dni,))
+            cursor.execute("INSERT INTO Empleado (dni_Empleado) VALUES (%s)", (self.dni,))
             conn.commit()
         except Exception as e:
             print("Error al insertar Cliente:", e)
         finally:
             cursor.close()
             conn.close()
-
-    def eliminar_Cliente(c):
-    
-        conn = conectar_bd()
-        cursor = conn.cursor()
-        try:
-            cursor.execute("DELETE FROM Vehiculo WHERE dni_cliente = %s", (c[1],))
-            cursor.execute("DELETE FROM Cliente WHERE dni_Cliente = %s", (c[1],))
-            Persona.eliminar_Personas(c[1])
-            conn.commit()
-        except Exception as e:
-            print("Error al eliminar Cliente:", e)
-        finally:
-            cursor.close()
-            conn.close()
-
-    def actualizar_Cliente(dni, nombre, apellido, tel, dir_):
-        Persona.actualizar_Personas(nombre, apellido, tel, dir_, dni)
-
-class Empleados(Persona):
-
+        
     def get_options():
         with conectar_bd() as conn:
             with conn.cursor() as cursor:
@@ -138,52 +160,25 @@ class Empleados(Persona):
         conn.close()
         return resultados
 
-    def insertar_Empleado(dni, nombre, apellido, tel, dir_):
-        conn = conectar_bd()
-        cursor = conn.cursor()
-        try:
-            Persona.insertar_Personas(dni, nombre, apellido, tel, dir_)
-            cursor.execute("INSERT INTO Empleado (dni_Empleado) VALUES (%s)",
-                       (dni,))
-            conn.commit()
-        except Exception as e:
-            print("Error al insertar Empleado:", e)
-        finally:
-            cursor.close()
-            conn.close()
-
-    def eliminar_Empleado(c):
-        
-        conn = conectar_bd()
-        cursor = conn.cursor()
-        try:
-            cursor.execute("DELETE FROM Usuarios WHERE legajo = %s", (c[0],))
-            cursor.execute("DELETE FROM Empleado WHERE dni_Empleado = %s", (c[1],))
-            Persona.eliminar_Personas(c[1])
-            conn.commit()
-        except Exception as e:
-            print("Error al eliminar Empleado:", e)
-        finally:
-            cursor.close()
-            conn.close()
-
-    def actualizar_Empleado(legajo, dni, nombre, apellido, tel, dir_):
-        conn = conectar_bd()
-        cursor = conn.cursor()
-        try:
-            Persona.actualizar_Personas(nombre, apellido, tel, dir_, dni)
-            cursor.execute("""
-                UPDATE Usuarios SET nombre=%s WHERE legajo=%s
-            """, (nombre,legajo ))
-            conn.commit()
-
-        except Exception as e:
-            print("Error al actualizar Empleado:", e)
-        finally:
-            cursor.close()
-            conn.close()
-
 class Provedores(Persona):
+    def __init__(self, dni, nombre, apellido, tel, dir_):
+        super().__init__(dni, nombre, apellido, tel, dir_)
+        self.insertar()
+
+    def insertar(self):
+        super().insertar()
+        conn = conectar_bd()
+        cursor = conn.cursor()
+        try:
+            cursor.execute("INSERT INTO Provedor (dni_Provedor) VALUES (%s)", (self.dni,))
+            conn.commit()
+        except Exception as e:
+            print("Error al insertar Cliente:", e)
+        finally:
+            cursor.close()
+            conn.close()
+
+
     def get_options():
         with conectar_bd() as conn:
             with conn.cursor() as cursor:
@@ -214,37 +209,6 @@ class Provedores(Persona):
         cursor.close()
         conn.close()
         return resultados
-
-    def insertar_Provedor(dni, nombre, apellido, tel, dir_):
-        conn = conectar_bd()
-        cursor = conn.cursor()
-        try:
-            Persona.insertar_Personas(dni, nombre, apellido, tel, dir_)
-            cursor.execute("INSERT INTO Provedor (dni_Provedor) VALUES (%s)",
-                        (dni,))
-            conn.commit()
-        except Exception as e:
-            print("Error al insertar Provedor:", e)
-        finally:
-            cursor.close()
-            conn.close()
-
-    def eliminar_Provedor(c):
-        
-        conn = conectar_bd()
-        cursor = conn.cursor()
-        try:
-            cursor.execute("DELETE FROM Provedor WHERE dni_Provedor = %s", (c[1],))
-            Persona.eliminar_Personas(c[1])
-            conn.commit()
-        except Exception as e:
-            print("Error al eliminar Provedor:", e)
-        finally:
-            cursor.close()
-            conn.close()
-
-    def actualizar_Provedor(cod_Provedor, dni, nombre, apellido, tel, dir_):
-        Persona.actualizar_Personas(nombre, apellido, tel, dir_, dni)
 
 class Repuestos:
     def get_options():
@@ -296,13 +260,6 @@ class Repuestos:
                 conn.commit()
 
 class Usuarios:
-    def get_options_legajos():
-        with conectar_bd() as conn:
-            with conn.cursor() as cursor:
-                cursor.execute("SELECT legajo FROM Empleado ORDER BY legajo")
-                resultados = cursor.fetchall()
-                return [ft.dropdown.Option(nombre[0]) for nombre in resultados]
-
     def get_options():
         with conectar_bd() as conn:
             with conn.cursor() as cursor:
@@ -428,50 +385,63 @@ class Vehiculos:
                 conn.commit()
 
 class Presupuestos:
-    def get_options_legajos():
-        with conectar_bd() as conn:
-            with conn.cursor() as cursor:
-                cursor.execute("SELECT legajo FROM Empleado ORDER BY legajo")
-                resultados = cursor.fetchall()
-                return [ft.dropdown.Option(nombre[0]) for nombre in resultados]
 
-
-    def insertar_Ficha_Tecnica(matricula, repuesto, cantidad,legajos):
+    def insertar_Presupuestos(matricula, repuesto, cantidad, legajo, precio, id=None):
         conn = conectar_bd()
         cursor = conn.cursor()
         try:
-            cursor.execute("""
-                    SELECT id_
-                    FROM Reparaciones
-                    WHERE matricula LIKE %s
-                """, (repuesto,))
-            id_reparacion=cursor.fetchone()
-            if not id_reparacion:
-                cursor.execute("INSERT INTO Reparaciones (matricula_vehiculo) VALUES (%s)",
-                        (matricula,))
-            
-            cursor.execute("""
-                    SELECT precio_x_unidad
-                    FROM Repuesto
-                    WHERE nombre LIKE %s
-                """, (repuesto,))
-            precio=cursor.fetchone()
+            if id is None:
+                cursor.execute(
+                    "INSERT INTO Reparaciones (matricula_vehiculo) VALUES (%s)",
+                    (matricula,)
+                )
+                cursor.execute("SELECT MAX(id) FROM Reparaciones")
+                id = cursor.fetchone()[0]
 
-            precio*=cantidad
+            cursor.execute(
+                """INSERT INTO detalle_Reparacion
+                (reparacion_id, legajo, repuesto, cantidad, precio)
+                VALUES (%s, %s, %s, %s, %s)""",
+                (id, legajo, repuesto, cantidad, precio)
+            )
 
-            cursor.execute("""
-                    SELECT precio_x_unidad
-                    FROM Repuesto
-                    WHERE nombre LIKE %s
-                """, (f"%{repuesto}%",))
-            id_reparacion=cursor.fetchone()
-
-            cursor.execute("INSERT INTO Repuesto_Reparacion (repuesto,cantidad,Precio,reparacion_id) VALUES (%s,%s,%s,%s)",
-                        (repuesto,cantidad,precio,id_reparacion))
             conn.commit()
         except Exception as e:
-            print("Error al insertar Ficha_Tecnica:", e)
+            print("Error al insertar Presupuesto:", e)
         finally:
             cursor.close()
             conn.close()
+        return id
 
+    def obtener_Presupuesto(id):
+        resultado = []
+        with conectar_bd() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute("SELECT * FROM Reparaciones WHERE id=%s", (id,))
+                resultado.append(cursor.fetchone())
+
+                cursor.execute("SELECT * FROM detalle_Reparacion WHERE reparacion_id=%s", (id,))
+                resultado.append(cursor.fetchall())
+        return resultado
+
+    def eliminar_Presupuesto(id):
+        with conectar_bd() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute("DELETE FROM detalle_Reparacion WHERE reparacion_id=%s", (id,))
+                conn.commit()
+                
+    def eliminar_Todo_Presupuesto(id):
+        with conectar_bd() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute("DELETE FROM Reparaciones WHERE id=%s", (id,))
+                conn.commit()
+
+    def actualizar_Presupuesto(repuesto, cantidad, legajo, precio, id):
+        with conectar_bd() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute("""
+                    UPDATE detalle_Reparacion
+                    SET repuesto=%s, cantidad=%s legajo=%s precio=%s
+                    WHERE id=%s
+                """, (repuesto, cantidad, legajo, precio,id))
+                conn.commit()

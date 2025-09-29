@@ -1,6 +1,6 @@
 import flet as ft
 import mysql.connector
-from classes import Usuarios
+from classes import Usuarios,Empleados
 
 def Herramienta_Usuario(page: ft.Page):
     page.title = "Gestion de Usuarios"
@@ -12,7 +12,7 @@ def Herramienta_Usuario(page: ft.Page):
         border=ft.InputBorder.UNDERLINE,
         editable=True,
         label="legajo",
-        options=Usuarios.get_options_legajos(),
+        options=Empleados.get_options(),
     )
     modo_edicion = ft.Text()
 

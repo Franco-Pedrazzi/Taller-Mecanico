@@ -1,6 +1,6 @@
 import flet as ft
 import mysql.connector
-from classes import Empleados
+from classes import Empleados,Persona
 
 def Herramienta_Empleado(page: ft.Page):
     page.title = "Gestion de Empleado"
@@ -83,9 +83,9 @@ def Herramienta_Empleado(page: ft.Page):
 
     def enviar_datos(e):
         if modo_edicion.value == "editar":
-            Empleados.actualizar_Empleado(dni.value, nombre.value, apellido.value, telefono.value, direccion.value)
+            Persona.actualizar_Personas(dni.value, nombre.value, apellido.value, telefono.value, direccion.value)
         else:
-            Empleados.insertar_Empleado(dni.value, nombre.value, apellido.value, telefono.value, direccion.value)
+            nuevo=Empleados(dni.value, nombre.value, apellido.value, telefono.value, direccion.value)
         form.visible = False
         filtro.options = Empleados.get_options()
         cargar_tabla()
@@ -93,7 +93,7 @@ def Herramienta_Empleado(page: ft.Page):
 
     def eliminar_ui(c):
         
-        Empleados.eliminar_Empleado(c)
+        Persona.eliminar_Personas(c[1])
         actualizar_opciones()
         cargar_tabla()
 

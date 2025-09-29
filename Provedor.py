@@ -1,6 +1,6 @@
 import flet as ft
 import mysql.connector
-from classes import Provedores
+from classes import Provedores,Persona
 
 def Herramienta_Provedor(page: ft.Page):
     page.title = "Gestion de Provedor"
@@ -83,9 +83,9 @@ def Herramienta_Provedor(page: ft.Page):
 
     def enviar_datos(e):
         if modo_edicion.value == "editar":
-            Provedores.actualizar_Provedor(dni.value, nombre.value, apellido.value, telefono.value, direccion.value)
+            Persona.actualizar_Personas(dni.value, nombre.value, apellido.value, telefono.value, direccion.value)
         else:
-            Provedores.insertar_Provedor(dni.value, nombre.value, apellido.value, telefono.value, direccion.value)
+            nuevo=Provedores(dni.value, nombre.value, apellido.value, telefono.value, direccion.value)
         form.visible = False
         filtro.options = Provedores.get_options()
         cargar_tabla()
@@ -93,7 +93,7 @@ def Herramienta_Provedor(page: ft.Page):
 
     def eliminar_ui(c):
         
-        Provedores.eliminar_Provedor(c)
+        Persona.eliminar_Personas(c[1])
         actualizar_opciones()
         cargar_tabla()
 

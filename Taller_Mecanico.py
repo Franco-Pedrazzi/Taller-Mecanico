@@ -1,6 +1,4 @@
 import flet as ft
-import mysql.connector
-
 
 from cliente import Herramienta_Cliente
 from Empleado import Herramienta_Empleado
@@ -8,6 +6,7 @@ from Provedor import Herramienta_Provedor
 from Repuesto import Herramienta_Repuesto
 from usuario import Herramienta_Usuario
 from Ficha_Tecnica import Herramienta_Ficha_Tecnica
+from Presupuesto import Herramienta_Presupuesto
 from classes import Usuarios
 
 def menu_principal(page: ft.Page,name):
@@ -105,7 +104,7 @@ def menu_principal(page: ft.Page,name):
     administracion = ft.PopupMenuButton(
         items=[
             ft.PopupMenuItem(content=ficha_tecnica_item),
-            ft.PopupMenuItem(content=presupuesto_icono_item),
+            ft.PopupMenuItem(content=presupuesto_icono_item, on_click=lambda e: Presupuesto(e, page,name)),
         ],
         content=ft.Text("Administracion"), tooltip="Administracion de presupuesto y ficha tecnica"
         
@@ -196,12 +195,18 @@ def Repuesto(e, page: ft.Page,name):
     Herramienta_Repuesto(page)
     page.update()
 
+def Presupuesto(e, page: ft.Page,name):
+    page.controls.clear()
+    menu_principal(page,name)
+    Herramienta_Presupuesto(page)
+    page.update()
+
 def log(page: ft.Page):
     page.title = "Login"
 
     Email = ft.TextField(label="Email")
     Password = ft.TextField(label="Contraseña", password=True, can_reveal_password=True)
-
+    Error=ft.Text(value="", size=20)
     def login(e):
         resultado=Usuarios.Login(Email.value, Password.value)
         if resultado:
@@ -210,14 +215,15 @@ def log(page: ft.Page):
             menu_principal(page,resultado[0])
             
         else:
-            print("Email o contraseña incorrectos")
+            Error.value="Email o contraseña incorrectos"
         page.update()
 
     page.add(
         ft.Text("Login", size=24, weight="bold"),
         Email,
         Password,
-        ft.ElevatedButton("Aceptar", on_click=login)
+        ft.ElevatedButton("Aceptar", on_click=login),
+        Error
     )
 
 
