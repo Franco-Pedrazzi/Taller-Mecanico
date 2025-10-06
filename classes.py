@@ -427,7 +427,7 @@ class Presupuestos:
     def eliminar_Presupuesto(id):
         with conectar_bd() as conn:
             with conn.cursor() as cursor:
-                cursor.execute("DELETE FROM detalle_Reparacion WHERE reparacion_id=%s", (id,))
+                cursor.execute("DELETE FROM detalle_Reparacion WHERE id=%s", (id,))
                 conn.commit()
                 
     def eliminar_Todo_Presupuesto(id):
@@ -441,7 +441,33 @@ class Presupuestos:
             with conn.cursor() as cursor:
                 cursor.execute("""
                     UPDATE detalle_Reparacion
-                    SET repuesto=%s, cantidad=%s legajo=%s precio=%s
+                    SET repuesto=%s, cantidad=%s, legajo=%s, precio=%s
                     WHERE id=%s
                 """, (repuesto, cantidad, legajo, precio,id))
                 conn.commit()
+
+class FichaTecnica:
+    def insertar_FichaTecnica(Vehiculo_Matricula,nroEmpleados,subtotal,mano_de_obra,total):
+        conn = conectar_bd()
+        cursor = conn.cursor()
+        try:
+            cursor.execute(
+                    "INSERT INTO Ficha_Tecnica (Vehiculo_Matricula,nroEmpleados,subtotal,mano_de_obra,total) VALUES (%s,%s,%s,%s,%s)",
+                    (Vehiculo_Matricula,nroEmpleados,subtotal,mano_de_obra,total)
+                )
+
+
+            conn.commit()
+        except Exception as e:
+            print("Error al insertar Presupuesto:", e)
+        finally:
+            cursor.close()
+            conn.close()
+        return id
+
+    def obtener_FichaTecnica():
+        with conectar_bd() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute("SELECT * FROM Ficha_Tecnica")
+                return cursor.fetchall()
+

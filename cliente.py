@@ -1,5 +1,4 @@
 import flet as ft
-import mysql.connector
 from Vehiculo import Herramienta_Vehiculo
 from classes import cliente,Persona
 

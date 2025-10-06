@@ -103,7 +103,7 @@ def menu_principal(page: ft.Page,name):
     
     administracion = ft.PopupMenuButton(
         items=[
-            ft.PopupMenuItem(content=ficha_tecnica_item),
+            ft.PopupMenuItem(content=ficha_tecnica_item, on_click=lambda e: FichaTecnica(e, page,name)),
             ft.PopupMenuItem(content=presupuesto_icono_item, on_click=lambda e: Presupuesto(e, page,name)),
         ],
         content=ft.Text("Administracion"), tooltip="Administracion de presupuesto y ficha tecnica"
@@ -199,6 +199,12 @@ def Presupuesto(e, page: ft.Page,name):
     page.controls.clear()
     menu_principal(page,name)
     Herramienta_Presupuesto(page)
+    page.update()
+
+def FichaTecnica(e, page: ft.Page,name):
+    page.controls.clear()
+    menu_principal(page,name)
+    Herramienta_Ficha_Tecnica(page)
     page.update()
 
 def log(page: ft.Page):
